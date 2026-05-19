@@ -1,11 +1,17 @@
 import { useState, useEffect } from 'react'
 
 export function EditModal({ isOpen, vendor, onClose, onSave, isLoading }) {
-  const [formData, setFormData] = useState({ namaPerusahaan: '', alamat: '', kontak: '', statusKerjasama: '' })
+  const [formData, setFormData] = useState({ namaPerusahaan: '', alamat: '', kontak: '', statusKerjasama: '', defaultPrice: '' })
   const [errors, setErrors] = useState({})
 
   useEffect(() => {
-    if (vendor) setFormData({ namaPerusahaan: vendor.namaPerusahaan, alamat: vendor.alamat, kontak: vendor.kontak, statusKerjasama: vendor.statusKerjasama })
+    if (vendor) setFormData({ 
+      namaPerusahaan: vendor.namaPerusahaan, 
+      alamat: vendor.alamat, 
+      kontak: vendor.kontak, 
+      statusKerjasama: vendor.statusKerjasama,
+      defaultPrice: vendor.defaultPrice !== undefined && vendor.defaultPrice !== null ? vendor.defaultPrice : '500000'
+    })
   }, [vendor])
 
   const handleChange = (e) => {
@@ -20,6 +26,9 @@ export function EditModal({ isOpen, vendor, onClose, onSave, isLoading }) {
     if (!formData.alamat.trim()) newErrors.alamat = 'Wajib diisi'
     if (!formData.kontak.trim()) newErrors.kontak = 'Wajib diisi'
     if (!formData.statusKerjasama) newErrors.statusKerjasama = 'Wajib dipilih'
+    if (!formData.defaultPrice || isNaN(formData.defaultPrice) || Number(formData.defaultPrice) <= 0) {
+      newErrors.defaultPrice = 'Wajib diisi dengan nominal positif'
+    }
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -44,13 +53,14 @@ export function EditModal({ isOpen, vendor, onClose, onSave, isLoading }) {
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {[
-            { name: 'namaPerusahaan', label: 'Nama Perusahaan', ph: 'PT. Kreatif Solusi' },
-            { name: 'alamat', label: 'Alamat', ph: 'Jl. Merdeka No. 12' },
-            { name: 'kontak', label: 'Kontak', ph: '08xx-xxxx-xxxx' },
+            { name: 'namaPerusahaan', label: 'Nama Perusahaan', ph: 'PT. Kreatif Solusi', type: 'text' },
+            { name: 'alamat', label: 'Alamat', ph: 'Jl. Merdeka No. 12', type: 'text' },
+            { name: 'kontak', label: 'Kontak', ph: '08xx-xxxx-xxxx', type: 'text' },
+            { name: 'defaultPrice', label: 'Harga Default POS (Rp)', ph: '500000', type: 'number' },
           ].map(f => (
             <div key={f.name}>
               <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">{f.label}</label>
-              <input type="text" name={f.name} value={formData[f.name]} onChange={handleChange} placeholder={f.ph}
+              <input type={f.type || 'text'} name={f.name} value={formData[f.name]} onChange={handleChange} placeholder={f.ph}
                 className={errors[f.name] ? '!border-red-500' : ''} />
               {errors[f.name] && <p className="text-red-400 text-xs mt-1">{errors[f.name]}</p>}
             </div>

@@ -130,6 +130,7 @@ public class VendorController {
             vendor.setKontak(vendorDetails.getKontak());
             vendor.setAlamat(vendorDetails.getAlamat());
             vendor.setStatusKerjasama(vendorDetails.getStatusKerjasama());
+            vendor.setDefaultPrice(vendorDetails.getDefaultPrice());
             
             Vendor updatedVendor = vendorRepository.save(vendor);
             return ResponseEntity.ok(updatedVendor);
