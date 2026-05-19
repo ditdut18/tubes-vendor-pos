@@ -39,7 +39,7 @@ public class TransactionController {
         tx.setVendor(vendor);
         tx.setAmount(request.getAmount());
         tx.setPaymentMethod(request.getPaymentMethod());
-        tx.setStatus("PAID - SECURE");
+        tx.setStatus("PENDING");
         tx.setReceiptNumber("TRX-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
         tx.setTransactionDate(LocalDateTime.now());
 
@@ -47,8 +47,28 @@ public class TransactionController {
         return ResponseEntity.ok(tx);
     }
     
+    @PutMapping("/confirm/{id}")
+    public ResponseEntity<?> confirmPayment(@PathVariable Long id) {
+        Transaction tx = transactionRepository.findById(id).orElse(null);
+        if (tx == null) {
+            return ResponseEntity.badRequest().body("Transaksi tidak ditemukan");
+        }
+        tx.setStatus("PAID - SECURE");
+        transactionRepository.save(tx);
+        return ResponseEntity.ok(tx);
+    }
+    
     @GetMapping
     public ResponseEntity<List<Transaction>> getAllTransactions() {
         return ResponseEntity.ok(transactionRepository.findAllByOrderByTransactionDateDesc());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteTransaction(@PathVariable Long id) {
+        if (!transactionRepository.existsById(id)) {
+            return ResponseEntity.badRequest().body("Transaksi tidak ditemukan");
+        }
+        transactionRepository.deleteById(id);
+        return ResponseEntity.ok().body("Transaksi dihapus");
     }
 }

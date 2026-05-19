@@ -40,7 +40,7 @@ export default function App() {
         setUserRole(role)
         localStorage.setItem('isAuth', 'true')
         localStorage.setItem('userRole', role)
-        navigate('/vendors')
+        navigate('/dashboard')
       }
     } catch (err) {
       setAuthError(err.response?.data?.message || 'Terjadi kesalahan pada server.')
@@ -91,7 +91,10 @@ export default function App() {
   const [posAmount, setPosAmount] = useState('')
   const [paymentMethod, setPaymentMethod] = useState('')
   const [isProcessingPayment, setIsProcessingPayment] = useState(false)
+  const [isConfirmingPayment, setIsConfirmingPayment] = useState(false)
+  const [paymentStatusText, setPaymentStatusText] = useState('')
   const [receipt, setReceipt] = useState(null)
+  const [transactions, setTransactions] = useState([])
 
   // ----------------------------------------------------
   // CONTRACT GENERATION STATE
@@ -124,9 +127,20 @@ export default function App() {
     }
   }, [currentPage, pageSize, isAuthenticated])
 
+  const fetchTransactions = useCallback(async () => {
+    if (!isAuthenticated) return;
+    try {
+      const response = await axios.get(`${API_CONFIG.BACKEND_URL}/transactions`, { timeout: API_CONFIG.TIMEOUT })
+      setTransactions(response.data)
+    } catch (err) {
+      console.error("Gagal load riwayat transaksi", err)
+    }
+  }, [isAuthenticated])
+
   useEffect(() => {
     fetchVendors()
-  }, [fetchVendors])
+    fetchTransactions()
+  }, [fetchVendors, fetchTransactions])
 
   const validateForm = () => {
     const errors = {}
@@ -208,11 +222,15 @@ export default function App() {
     setReceipt(null)
     
     try {
+      setPaymentStatusText('CREATING INVOICE...')
+      await new Promise(r => setTimeout(r, 600))
+
       const payload = { vendorId: posSelectedVendor, amount: posAmount, paymentMethod }
       const response = await axios.post(`${API_CONFIG.BACKEND_URL}/transactions/pay`, payload)
       
       const tx = response.data
       setReceipt({
+        id: tx.id,
         transactionId: tx.receiptNumber,
         date: new Date(tx.transactionDate).toLocaleString('id-ID'),
         vendor: tx.vendor.namaPerusahaan,
@@ -222,10 +240,108 @@ export default function App() {
       })
       setPosAmount('')
       setPaymentMethod('')
+      fetchTransactions()
     } catch (err) {
-      alert("Gagal memproses pembayaran: " + (err.response?.data || "Cek Backend"))
+      alert("Gagal membuat tagihan: " + (err.response?.data || "Cek Backend"))
     } finally {
       setIsProcessingPayment(false)
+      setPaymentStatusText('')
+    }
+  }
+
+  const handleConfirmPayment = async () => {
+    if (!receipt || !receipt.id) return;
+    setIsConfirmingPayment(true)
+    try {
+      setPaymentStatusText('INITIALIZING SECURE CONNECTION...')
+      await new Promise(r => setTimeout(r, 600))
+      
+      setPaymentStatusText('VERIFYING VENDOR DATA...')
+      await new Promise(r => setTimeout(r, 600))
+      
+      setPaymentStatusText('AUTHORIZING PAYMENT...')
+      await new Promise(r => setTimeout(r, 600))
+
+      setPaymentStatusText('GENERATING E-RECEIPT...')
+      
+      const response = await axios.put(`${API_CONFIG.BACKEND_URL}/transactions/confirm/${receipt.id}`)
+      const tx = response.data
+      setReceipt({
+        id: tx.id,
+        transactionId: tx.receiptNumber,
+        date: new Date(tx.transactionDate).toLocaleString('id-ID'),
+        vendor: tx.vendor.namaPerusahaan,
+        amount: tx.amount,
+        method: tx.paymentMethod,
+        status: tx.status
+      })
+      fetchTransactions()
+    } catch (err) {
+      alert("Gagal konfirmasi pembayaran.")
+    } finally {
+      setIsConfirmingPayment(false)
+      setPaymentStatusText('')
+    }
+  }
+
+  const handleDownloadReceipt = () => {
+    if (!receipt) return;
+    const doc = new jsPDF()
+    
+    doc.setFontSize(22)
+    doc.setFont("helvetica", "bold")
+    doc.text("VENDOR POS", 105, 20, null, null, "center")
+    
+    doc.setFontSize(10)
+    doc.setFont("helvetica", "normal")
+    doc.text("Sistem Transaksi Elektronik", 105, 27, null, null, "center")
+    doc.text("==================================================", 105, 32, null, null, "center")
+    
+    doc.setFontSize(16)
+    doc.setFont("helvetica", "bold")
+    doc.text("OFFICIAL E-RECEIPT", 105, 45, null, null, "center")
+    
+    doc.setFontSize(11)
+    doc.setFont("helvetica", "normal")
+    doc.text(`Receipt ID   : ${receipt.transactionId}`, 20, 60)
+    doc.text(`Date         : ${receipt.date}`, 20, 67)
+    doc.text(`Vendor       : ${receipt.vendor}`, 20, 74)
+    doc.text(`Method       : ${receipt.method}`, 20, 81)
+    
+    doc.text("==================================================", 105, 90, null, null, "center")
+    
+    doc.setFont("helvetica", "bold")
+    doc.setFontSize(14)
+    doc.text(`TOTAL PAID   : Rp ${Number(receipt.amount).toLocaleString('id-ID')}`, 20, 105)
+    
+    doc.setFont("helvetica", "normal")
+    doc.setFontSize(10)
+    doc.text("Status       : SUCCESS (SECURED)", 20, 115)
+    
+    doc.setFontSize(9)
+    doc.text("Dokumen ini adalah bukti pembayaran elektronik yang sah.", 105, 140, null, null, "center")
+    
+    doc.save(`Invoice_${receipt.transactionId}.pdf`)
+  }
+
+  const handleAdminConfirmTransaction = async (id) => {
+    try {
+      await axios.put(`${API_CONFIG.BACKEND_URL}/transactions/confirm/${id}`)
+      fetchTransactions()
+    } catch (err) {
+      alert("Gagal mengkonfirmasi transaksi.")
+    }
+  }
+
+  const handleDeleteTransaction = async (id) => {
+    if (!window.confirm("Aksi Administrator: Apakah Anda yakin ingin menghapus data riwayat transaksi ini dari database secara permanen?")) return;
+    
+    try {
+      await axios.delete(`${API_CONFIG.BACKEND_URL}/transactions/${id}`)
+      if (receipt && receipt.id === id) setReceipt(null);
+      fetchTransactions()
+    } catch (err) {
+      alert("Gagal menghapus transaksi.")
     }
   }
 
@@ -277,6 +393,105 @@ export default function App() {
   // ====================================================
   // COMPONENT RENDERS
   // ====================================================
+
+  const renderDashboardPage = () => {
+    const totalRevenue = transactions.filter(t => t.status === 'PAID - SECURE').reduce((sum, t) => sum + t.amount, 0)
+    const pendingCount = transactions.filter(t => t.status === 'PENDING').length
+    const paidCount = transactions.filter(t => t.status === 'PAID - SECURE').length
+
+    return (
+    <div className="animate-fade-in space-y-6">
+      {/* Page Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Dashboard</h1>
+          <p className="text-gray-500 text-sm mt-0.5">Selamat datang, {userRole === 'ADMIN' ? 'Administrator' : 'Staff Kasir'}.</p>
+        </div>
+        <span className={`text-xs font-bold px-3 py-1.5 rounded-lg ${userRole === 'ADMIN' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-sky-500/10 text-sky-400 border border-sky-500/20'}`}>
+          {userRole === 'ADMIN' ? '👑 Full Access' : '🔒 Limited Access'}
+        </span>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { label: 'Total Vendor', value: vendors.length, icon: '🏢', color: 'from-indigo-600 to-indigo-800', sub: 'Mitra terdaftar' },
+          { label: 'Total Transaksi', value: transactions.length, icon: '💳', color: 'from-emerald-600 to-emerald-800', sub: `${paidCount} selesai` },
+          { label: 'Menunggu Bayar', value: pendingCount, icon: '⏳', color: 'from-yellow-600 to-amber-800', sub: 'Status pending' },
+          { label: 'Total Revenue', value: `Rp ${totalRevenue.toLocaleString('id-ID')}`, icon: '📈', color: 'from-purple-600 to-purple-800', sub: 'Transaksi berhasil' },
+        ].map((stat, i) => (
+          <div key={i} className="rounded-2xl border border-[#2a2a3a] bg-[#1c1c26] p-5 card-hover" style={{animationDelay: `${i*80}ms`}}>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-gray-500 text-xs font-semibold uppercase tracking-wider">{stat.label}</span>
+              <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center text-lg shadow-lg`}>{stat.icon}</div>
+            </div>
+            <p className="text-2xl font-extrabold text-white">{stat.value}</p>
+            <p className="text-xs text-gray-500 mt-1">{stat.sub}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Quick Actions + Recent Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Quick Actions */}
+        <div className="rounded-2xl border border-[#2a2a3a] bg-[#1c1c26] p-5">
+          <h3 className="text-sm font-bold text-white mb-4">Aksi Cepat</h3>
+          <div className="space-y-2">
+            <Link to="/pos" className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition group">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-lg group-hover:scale-110 transition">💳</div>
+              <div>
+                <p className="text-sm font-semibold text-white">Buat Pembayaran</p>
+                <p className="text-xs text-gray-500">Proses tagihan vendor</p>
+              </div>
+            </Link>
+            <Link to="/vendors" className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition group">
+              <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-lg group-hover:scale-110 transition">🏢</div>
+              <div>
+                <p className="text-sm font-semibold text-white">Lihat Vendor</p>
+                <p className="text-xs text-gray-500">Kelola data mitra</p>
+              </div>
+            </Link>
+            {userRole === 'ADMIN' && (
+              <Link to="/contract" className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition group">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-lg group-hover:scale-110 transition">📄</div>
+                <div>
+                  <p className="text-sm font-semibold text-white">Generate Kontrak</p>
+                  <p className="text-xs text-gray-500">Buat kontrak PDF</p>
+                </div>
+              </Link>
+            )}
+          </div>
+        </div>
+
+        {/* Recent Transactions */}
+        <div className="lg:col-span-2 rounded-2xl border border-[#2a2a3a] bg-[#1c1c26] p-5">
+          <h3 className="text-sm font-bold text-white mb-4">Transaksi Terbaru</h3>
+          {transactions.length > 0 ? (
+            <div className="space-y-2">
+              {transactions.slice(0, 5).map(tx => (
+                <div key={tx.id} className="flex items-center justify-between p-3 rounded-xl bg-[#0f0f13] border border-[#2a2a3a]">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-2 h-2 rounded-full ${tx.status === 'PENDING' ? 'bg-yellow-500' : 'bg-emerald-500'}`}></div>
+                    <div>
+                      <p className="text-sm font-medium text-white">{tx.vendor.namaPerusahaan}</p>
+                      <p className="text-xs text-gray-500">{tx.receiptNumber} · {new Date(tx.transactionDate).toLocaleDateString('id-ID')}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-white">Rp {Number(tx.amount).toLocaleString('id-ID')}</p>
+                    <span className={`text-[10px] font-bold ${tx.status === 'PENDING' ? 'text-yellow-500' : 'text-emerald-500'}`}>{tx.status}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-600 text-sm">Belum ada transaksi.</div>
+          )}
+        </div>
+      </div>
+    </div>
+    )
+  }
 
   const renderLandingPage = () => (
     <div className="min-h-screen bg-[#050505] text-white relative overflow-hidden overflow-y-auto">
@@ -458,56 +673,69 @@ export default function App() {
   )
 
   const renderVendorPage = () => (
-    <div className="animate-fade-in">
-      <h2 className="text-3xl font-black mb-6 border-b-4 border-black pb-2 inline-block">Manajemen Mitra (Supplier)</h2>
-      
-      {successMessage && <div className="bg-green-100 border-l-4 border-green-600 text-green-700 p-4 mb-6 font-bold">{successMessage}</div>}
-      {error && <div className="bg-red-100 border-l-4 border-red-600 text-red-700 p-4 mb-6 font-bold">{error}</div>}
+    <div className="animate-fade-in space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Manajemen Mitra Vendor</h1>
+          <p className="text-gray-500 text-sm mt-0.5">{vendors.length} vendor terdaftar di sistem</p>
+        </div>
+      </div>
+
+      {successMessage && <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-4 rounded-xl text-sm font-medium animate-fade-in">✅ {successMessage}</div>}
+      {error && <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-sm font-medium animate-fade-in">⚠️ {error}</div>}
 
       {userRole === 'ADMIN' && (
-        <div className="bg-white p-6 border-2 border-black shadow-md mb-8">
-          <h3 className="text-xl font-bold mb-4">Registrasi Mitra Baru</h3>
-          <form onSubmit={handleAddVendor} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input type="text" name="namaPerusahaan" value={formData.namaPerusahaan} onChange={handleChange} placeholder="Nama Perusahaan" className="border-2 border-gray-300 p-3 focus:border-black focus:outline-none"/>
-            <input type="text" name="alamat" value={formData.alamat} onChange={handleChange} placeholder="Alamat" className="border-2 border-gray-300 p-3 focus:border-black focus:outline-none"/>
-            <input type="text" name="kontak" value={formData.kontak} onChange={handleChange} placeholder="Kontak (No HP/Telp)" className="border-2 border-gray-300 p-3 focus:border-black focus:outline-none"/>
-            <select name="statusKerjasama" value={formData.statusKerjasama} onChange={handleChange} className="border-2 border-gray-300 p-3 focus:border-black focus:outline-none">
+        <div className="rounded-2xl border border-[#2a2a3a] bg-[#1c1c26] p-5">
+          <h3 className="text-sm font-bold text-white mb-4">➕ Registrasi Mitra Baru</h3>
+          <form onSubmit={handleAddVendor} className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <input type="text" name="namaPerusahaan" value={formData.namaPerusahaan} onChange={handleChange} placeholder="Nama Perusahaan"/>
+            <input type="text" name="alamat" value={formData.alamat} onChange={handleChange} placeholder="Alamat"/>
+            <input type="text" name="kontak" value={formData.kontak} onChange={handleChange} placeholder="Kontak (No HP/Telp)"/>
+            <select name="statusKerjasama" value={formData.statusKerjasama} onChange={handleChange}>
               <option value="">Pilih Status...</option>
               {VENDOR_STATUS_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
             </select>
-            <button type="submit" disabled={isSubmitting} className="md:col-span-2 bg-black text-white font-bold py-3 hover:bg-gray-800 transition disabled:opacity-50">TAMBAH DATA</button>
+            <button type="submit" disabled={isSubmitting} className="md:col-span-2 bg-indigo-600 text-white font-semibold py-3 rounded-xl hover:bg-indigo-500 transition disabled:opacity-50">Tambah Vendor</button>
           </form>
         </div>
       )}
 
-      <div className="bg-white border-2 border-black overflow-hidden shadow-md">
-        <div className="p-4 bg-gray-100 border-b-2 border-black flex justify-between">
-          <input type="text" placeholder="Cari vendor..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="border-2 border-gray-300 p-2 px-4 focus:border-black focus:outline-none w-64"/>
+      <div className="rounded-2xl border border-[#2a2a3a] bg-[#1c1c26] overflow-hidden">
+        <div className="p-4 border-b border-[#2a2a3a] flex items-center gap-3">
+          <input type="text" placeholder="🔍 Cari vendor..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="!w-72"/>
+          <span className="text-xs text-gray-500 ml-auto">{filteredVendors.length} hasil</span>
         </div>
-        <table className="w-full text-left">
-          <thead className="bg-black text-white">
-            <tr>
-              <th className="p-4">ID</th><th className="p-4">Nama Perusahaan</th><th className="p-4">Kontak</th><th className="p-4">Status</th>
+        <table className="w-full text-left text-sm">
+          <thead>
+            <tr className="border-b border-[#2a2a3a] text-gray-500 text-xs uppercase tracking-wider">
+              <th className="p-4">ID</th><th className="p-4">Nama Perusahaan</th><th className="p-4">Alamat</th><th className="p-4">Kontak</th><th className="p-4">Status</th>
               {userRole === 'ADMIN' && <th className="p-4">Aksi</th>}
             </tr>
           </thead>
           <tbody>
             {filteredVendors.map(vendor => (
-              <tr key={vendor.id} className="border-b border-gray-200 hover:bg-gray-50">
-                <td className="p-4 font-bold">{vendor.id}</td>
-                <td className="p-4">{vendor.namaPerusahaan}</td>
-                <td className="p-4">{vendor.kontak}</td>
-                <td className="p-4"><span className={`px-2 py-1 text-xs font-bold ${getStatusColor(vendor.statusKerjasama)}`}>{vendor.statusKerjasama}</span></td>
+              <tr key={vendor.id} className="border-b border-[#2a2a3a]/50 hover:bg-white/[0.02] transition">
+                <td className="p-4 font-mono text-gray-500 text-xs">#{vendor.id}</td>
+                <td className="p-4 font-semibold text-white">{vendor.namaPerusahaan}</td>
+                <td className="p-4 text-gray-400 text-xs">{vendor.alamat}</td>
+                <td className="p-4 text-gray-400">{vendor.kontak}</td>
+                <td className="p-4">
+                  <span className={`text-xs font-bold px-2.5 py-1 rounded-lg ${
+                    vendor.statusKerjasama === 'Aktif' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                    vendor.statusKerjasama === 'Pending' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' :
+                    'bg-red-500/10 text-red-400 border border-red-500/20'
+                  }`}>{vendor.statusKerjasama}</span>
+                </td>
                 {userRole === 'ADMIN' && (
                   <td className="p-4 flex gap-2">
-                    <button onClick={() => { setSelectedVendor(vendor); setEditModalOpen(true); }} className="bg-blue-600 text-white px-3 py-1 text-xs font-bold hover:bg-blue-700">EDIT</button>
-                    <button onClick={() => { setSelectedVendor(vendor); setDeleteModalOpen(true); }} className="bg-red-600 text-white px-3 py-1 text-xs font-bold hover:bg-red-700">HAPUS</button>
+                    <button onClick={() => { setSelectedVendor(vendor); setEditModalOpen(true); }} className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 transition">Edit</button>
+                    <button onClick={() => { setSelectedVendor(vendor); setDeleteModalOpen(true); }} className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition">Hapus</button>
                   </td>
                 )}
               </tr>
             ))}
             {filteredVendors.length === 0 && !isLoading && (
-              <tr><td colSpan="5" className="p-8 text-center text-gray-500">Data vendor tidak ditemukan.</td></tr>
+              <tr><td colSpan="6" className="p-12 text-center text-gray-600">Data vendor tidak ditemukan.</td></tr>
             )}
           </tbody>
         </table>
@@ -516,160 +744,271 @@ export default function App() {
   )
 
   const renderPosPage = () => (
-    <div className="animate-fade-in grid grid-cols-1 md:grid-cols-2 gap-8">
-      <div>
-        <h2 className="text-3xl font-black mb-6 border-b-4 border-black pb-2 inline-block">POS & Payment Gateway</h2>
-        
-        <div className="bg-white p-6 border-2 border-black shadow-md">
-          <form onSubmit={handleProcessPayment} className="space-y-5">
+    <div className="animate-fade-in space-y-6">
+      <div><h1 className="text-2xl font-bold text-white">POS & Payment Gateway</h1><p className="text-gray-500 text-sm mt-0.5">Proses pembayaran tagihan vendor</p></div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="rounded-2xl border border-[#2a2a3a] bg-[#1c1c26] p-6">
+          <h3 className="text-sm font-bold text-white mb-5">Buat Tagihan Baru</h3>
+          <form onSubmit={handleProcessPayment} className="space-y-4">
             <div>
-              <label className="block text-sm font-bold mb-2">Pilih Vendor (Biller)</label>
-              <select required value={posSelectedVendor} onChange={e => setPosSelectedVendor(e.target.value)} className="w-full border-2 border-gray-300 p-3 focus:border-black focus:outline-none">
+              <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Vendor (Biller)</label>
+              <select required value={posSelectedVendor} onChange={e => setPosSelectedVendor(e.target.value)}>
                 <option value="">-- Pilih Vendor --</option>
                 {vendors.map(v => <option key={v.id} value={v.id}>{v.namaPerusahaan}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-bold mb-2">Total Pembayaran (Rp)</label>
-              <input required type="number" value={posAmount} onChange={e => setPosAmount(e.target.value)} placeholder="Misal: 500000" className="w-full border-2 border-gray-300 p-3 focus:border-black focus:outline-none"/>
+              <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Nominal (Rp)</label>
+              <input required type="number" value={posAmount} onChange={e => setPosAmount(e.target.value)} placeholder="500000"/>
             </div>
             <div>
-              <label className="block text-sm font-bold mb-2">Metode Pembayaran (Payment Gateway)</label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <label className={`border-2 p-3 text-center cursor-pointer font-bold ${paymentMethod === 'Cash' ? 'border-black bg-gray-100' : 'border-gray-200'}`}>
-                  <input required type="radio" className="hidden" name="payment" value="Cash" onChange={e => setPaymentMethod(e.target.value)} />
-                  💵 Tunai
-                </label>
-                <label className={`border-2 p-3 text-center cursor-pointer font-bold ${paymentMethod === 'Card' ? 'border-black bg-gray-100' : 'border-gray-200'}`}>
-                  <input required type="radio" className="hidden" name="payment" value="Card" onChange={e => setPaymentMethod(e.target.value)} />
-                  💳 Debit/Kredit
-                </label>
-                <label className={`border-2 p-3 text-center cursor-pointer font-bold ${paymentMethod === 'E-Wallet' ? 'border-black bg-gray-100' : 'border-gray-200'}`}>
-                  <input required type="radio" className="hidden" name="payment" value="E-Wallet" onChange={e => setPaymentMethod(e.target.value)} />
-                  📱 E-Wallet
-                </label>
+              <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Metode Pembayaran</label>
+              <div className="grid grid-cols-3 gap-2">
+                {[{v:'Cash',i:'💵',l:'Tunai'},{v:'Card',i:'💳',l:'Kartu'},{v:'E-Wallet',i:'📱',l:'E-Wallet'}].map(m => (
+                  <label key={m.v} className={`p-3 rounded-xl text-center cursor-pointer text-sm font-medium transition-all border ${paymentMethod === m.v ? 'border-indigo-500 bg-indigo-500/10 text-indigo-400' : 'border-[#2a2a3a] text-gray-400 hover:border-gray-500'}`}>
+                    <input required type="radio" className="!hidden" name="payment" value={m.v} onChange={e => setPaymentMethod(e.target.value)} />
+                    <span className="text-lg block mb-1">{m.i}</span>{m.l}
+                  </label>
+                ))}
               </div>
             </div>
-            <button type="submit" disabled={isProcessingPayment} className="w-full bg-green-600 text-white font-black py-4 hover:bg-green-700 transition flex justify-center items-center gap-2 text-lg disabled:opacity-70">
-              {isProcessingPayment ? 'MENGHUBUNGI GATEWAY...' : '🔒 PROSES PEMBAYARAN AMAN'}
+            <button type="submit" disabled={isProcessingPayment} className="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl hover:bg-emerald-500 transition disabled:opacity-50 h-14 flex items-center justify-center">
+              {isProcessingPayment ? (
+                <div className="flex flex-col items-center leading-tight">
+                  <svg className="animate-spin h-5 w-5 text-white mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                  <span className="text-[10px] tracking-widest">{paymentStatusText}</span>
+                </div>
+              ) : '🔒 Proses Pembayaran'}
             </button>
           </form>
         </div>
+
+        <div>
+          {receipt ? (
+            <div className="rounded-2xl border border-[#2a2a3a] bg-[#1c1c26] p-6 relative">
+              {receipt.status === 'PAID - SECURE' && <div className="absolute top-5 right-5 text-emerald-500 text-3xl">✓</div>}
+              {receipt.status === 'PENDING' && <div className="absolute top-5 right-5 text-yellow-500 text-2xl animate-pulse">⏳</div>}
+              <div className="text-center mb-5 pb-4 border-b border-[#2a2a3a]">
+                <h3 className="text-lg font-bold text-white">OFFICIAL E-RECEIPT</h3>
+                <p className={`text-xs font-bold mt-1 ${receipt.status === 'PENDING' ? 'text-yellow-500' : 'text-emerald-500'}`}>
+                  {receipt.status === 'PENDING' ? 'WAITING FOR PAYMENT' : 'SECURE TRANSACTION VERIFIED'}
+                </p>
+              </div>
+              <div className="space-y-3 text-sm">
+                {[
+                  ['Transaction ID', <span className="font-mono text-xs bg-[#0f0f13] px-2 py-1 rounded-lg">{receipt.transactionId}</span>],
+                  ['Date', receipt.date],
+                  ['Vendor', <span className="font-semibold text-white">{receipt.vendor}</span>],
+                  ['Method', receipt.method],
+                  ['Status', <span className={`text-xs font-bold px-2 py-0.5 rounded-lg ${receipt.status === 'PENDING' ? 'bg-yellow-500/10 text-yellow-400' : 'bg-emerald-500/10 text-emerald-400'}`}>{receipt.status}</span>],
+                ].map(([k,v],i) => (
+                  <div key={i} className="flex justify-between items-center"><span className="text-gray-500">{k}</span>{typeof v === 'string' ? <span className="text-gray-300">{v}</span> : v}</div>
+                ))}
+                <div className="flex justify-between items-center pt-4 border-t border-[#2a2a3a] mt-3">
+                  <span className="text-lg font-bold text-white">TOTAL</span>
+                  <span className={`text-xl font-extrabold ${receipt.status === 'PENDING' ? 'text-white' : 'text-emerald-400'}`}>Rp {Number(receipt.amount).toLocaleString('id-ID')}</span>
+                </div>
+              </div>
+              <div className="mt-6 flex flex-col gap-2">
+                {receipt.status === 'PENDING' ? (
+                  <button onClick={handleConfirmPayment} disabled={isConfirmingPayment} className="w-full bg-indigo-600 text-white font-bold py-3.5 rounded-xl hover:bg-indigo-500 transition disabled:opacity-50 h-14 flex items-center justify-center">
+                    {isConfirmingPayment ? (
+                      <div className="flex flex-col items-center leading-tight">
+                        <svg className="animate-spin h-5 w-5 text-white mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        <span className="text-[10px] tracking-widest">{paymentStatusText}</span>
+                      </div>
+                    ) : '💳 Konfirmasi Pembayaran'}
+                  </button>
+                ) : (
+                  <button onClick={handleDownloadReceipt} className="w-full bg-white/5 border border-[#2a2a3a] text-white font-semibold py-3 rounded-xl hover:bg-white/10 transition flex items-center justify-center gap-2 text-sm">
+                    ⬇️ Download Invoice PDF
+                  </button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="h-full min-h-[400px] flex items-center justify-center rounded-2xl border border-dashed border-[#2a2a3a] bg-[#1c1c26]/50">
+              <div className="text-center text-gray-600"><span className="text-4xl block mb-3 opacity-40">🧾</span><span className="text-sm">Receipt akan muncul<br/>setelah pembayaran dibuat.</span></div>
+            </div>
+          )}
+        </div>
       </div>
 
-      <div>
-        {receipt ? (
-          <div className="bg-white p-8 border-2 border-dashed border-black shadow-lg">
-            <div className="text-center mb-6 border-b-2 border-black pb-4">
-              <h3 className="text-2xl font-black">E-RECEIPT</h3>
-              <p className="text-sm font-bold text-green-600">TRANSAKSI BERHASIL</p>
-            </div>
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between"><span className="font-bold text-gray-500">Transaction ID:</span> <span className="font-mono">{receipt.transactionId}</span></div>
-              <div className="flex justify-between"><span className="font-bold text-gray-500">Date:</span> <span>{receipt.date}</span></div>
-              <div className="flex justify-between"><span className="font-bold text-gray-500">Vendor:</span> <span className="font-bold">{receipt.vendor}</span></div>
-              <div className="flex justify-between"><span className="font-bold text-gray-500">Payment Method:</span> <span>{receipt.method}</span></div>
-              <div className="flex justify-between pt-4 border-t border-gray-300 mt-4"><span className="font-black text-lg">TOTAL:</span> <span className="font-black text-lg">Rp {Number(receipt.amount).toLocaleString('id-ID')}</span></div>
-            </div>
-            <div className="mt-8 text-center text-xs text-gray-400">
-              Sistem Pembayaran Diamankan (Secure by Design)
-            </div>
-          </div>
-        ) : (
-          <div className="h-full flex items-center justify-center border-2 border-dashed border-gray-300 bg-gray-50 p-8 text-center text-gray-500 font-bold min-h-[400px]">
-            Struk Transaksi akan muncul di sini setelah pembayaran berhasil.
-          </div>
-        )}
+      {/* TRANSACTION HISTORY */}
+      <div className="rounded-2xl border border-[#2a2a3a] bg-[#1c1c26] overflow-hidden">
+        <div className="p-4 border-b border-[#2a2a3a] flex items-center justify-between">
+          <h3 className="text-sm font-bold text-white">Riwayat Transaksi</h3>
+          <span className="text-xs text-gray-500">{transactions.length} transaksi</span>
+        </div>
+        <table className="w-full text-left text-sm">
+          <thead>
+            <tr className="border-b border-[#2a2a3a] text-gray-500 text-xs uppercase tracking-wider">
+              <th className="p-3 pl-4">Waktu</th><th className="p-3">No. Struk</th><th className="p-3">Vendor</th><th className="p-3">Metode</th><th className="p-3">Nominal</th><th className="p-3">Status</th>
+              {userRole === 'ADMIN' && <th className="p-3">Aksi</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {transactions.map(tx => (
+              <tr key={tx.id} className="border-b border-[#2a2a3a]/50 hover:bg-white/[0.02] transition">
+                <td className="p-3 pl-4 text-gray-400 text-xs">{new Date(tx.transactionDate).toLocaleString('id-ID')}</td>
+                <td className="p-3 font-mono text-gray-500 text-xs">{tx.receiptNumber}</td>
+                <td className="p-3 font-semibold text-white text-sm">{tx.vendor.namaPerusahaan}</td>
+                <td className="p-3 text-gray-400">{tx.paymentMethod}</td>
+                <td className="p-3 font-semibold text-emerald-400">Rp {Number(tx.amount).toLocaleString('id-ID')}</td>
+                <td className="p-3"><span className={`text-[10px] font-bold px-2 py-1 rounded-lg ${tx.status === 'PENDING' ? 'bg-yellow-500/10 text-yellow-400' : 'bg-emerald-500/10 text-emerald-400'}`}>{tx.status}</span></td>
+                {userRole === 'ADMIN' && (
+                  <td className="p-3 flex gap-1.5">
+                    {tx.status === 'PENDING' && (
+                      <button onClick={() => handleAdminConfirmTransaction(tx.id)} className="px-2.5 py-1 text-[10px] font-semibold rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition">Konfirmasi</button>
+                    )}
+                    <button onClick={() => handleDeleteTransaction(tx.id)} className="px-2.5 py-1 text-[10px] font-semibold rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition">Hapus</button>
+                  </td>
+                )}
+              </tr>
+            ))}
+            {transactions.length === 0 && (
+              <tr><td colSpan={userRole === 'ADMIN' ? 7 : 6} className="p-10 text-center text-gray-600 text-sm">Belum ada riwayat transaksi.</td></tr>
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   )
-
+        
   const renderContractPage = () => {
     if (userRole !== 'ADMIN') {
       return (
-        <div className="animate-fade-in max-w-2xl mx-auto text-center mt-20">
-          <div className="text-6xl mb-6">🔒</div>
-          <h2 className="text-3xl font-black mb-2">Akses Ditolak</h2>
-          <p className="text-gray-600">Halaman Pembuatan Kontrak hanya dapat diakses oleh Administrator.</p>
-          <button onClick={() => navigate('/vendors')} className="mt-8 bg-black text-white px-6 py-3 font-bold">Kembali ke Dashboard</button>
+        <div className="animate-fade-in max-w-lg mx-auto text-center mt-20">
+          <div className="rounded-2xl border border-[#2a2a3a] bg-[#1c1c26] p-10">
+            <div className="text-5xl mb-4">🔒</div>
+            <h2 className="text-xl font-bold text-white mb-2">Akses Ditolak</h2>
+            <p className="text-gray-500 text-sm mb-6">Halaman ini hanya dapat diakses oleh Administrator.</p>
+            <button onClick={() => navigate('/dashboard')} className="bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-semibold text-sm hover:bg-indigo-500 transition">Kembali</button>
+          </div>
         </div>
       )
     }
 
     return (
-    <div className="animate-fade-in max-w-2xl mx-auto">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-black mb-2 inline-block">Modul Generate Kontrak</h2>
-        <p className="text-gray-600">Buat dokumen PDF kontrak kerjasama resmi secara otomatis.</p>
-      </div>
+    <div className="animate-fade-in space-y-6">
+      <div><h1 className="text-2xl font-bold text-white">Generate Kontrak Legal</h1><p className="text-gray-500 text-sm mt-0.5">Buat dokumen PDF kontrak kerjasama</p></div>
       
-      <div className="bg-white p-8 border-2 border-black shadow-md">
-        <form onSubmit={handleGenerateContract} className="space-y-6">
-          <div>
-            <label className="block text-sm font-bold mb-2">Pilih Vendor (Mitra)</label>
-            <select required value={contractVendor} onChange={e => setContractVendor(e.target.value)} className="w-full border-2 border-gray-300 p-3 focus:border-black focus:outline-none">
-              <option value="">-- Pilih Vendor --</option>
-              {vendors.map(v => <option key={v.id} value={v.id}>{v.namaPerusahaan}</option>)}
-            </select>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
+      <div className="max-w-2xl">
+        <div className="rounded-2xl border border-[#2a2a3a] bg-[#1c1c26] p-6">
+          <form onSubmit={handleGenerateContract} className="space-y-4">
             <div>
-              <label className="block text-sm font-bold mb-2">Durasi Kontrak (Bulan)</label>
-              <input required type="number" value={contractDuration} onChange={e => setContractDuration(e.target.value)} className="w-full border-2 border-gray-300 p-3 focus:border-black focus:outline-none"/>
+              <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Pilih Vendor (Mitra)</label>
+              <select required value={contractVendor} onChange={e => setContractVendor(e.target.value)}>
+                <option value="">-- Pilih Vendor --</option>
+                {vendors.map(v => <option key={v.id} value={v.id}>{v.namaPerusahaan}</option>)}
+              </select>
             </div>
-            <div>
-              <label className="block text-sm font-bold mb-2">Nilai Kontrak (Rp)</label>
-              <input required type="number" value={contractValue} onChange={e => setContractValue(e.target.value)} placeholder="Contoh: 10000000" className="w-full border-2 border-gray-300 p-3 focus:border-black focus:outline-none"/>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Durasi (Bulan)</label>
+                <input required type="number" value={contractDuration} onChange={e => setContractDuration(e.target.value)}/>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Nilai Kontrak (Rp)</label>
+                <input required type="number" value={contractValue} onChange={e => setContractValue(e.target.value)} placeholder="10000000"/>
+              </div>
             </div>
-          </div>
-          <button type="submit" className="w-full bg-blue-600 text-white font-black py-4 hover:bg-blue-700 transition flex justify-center items-center gap-2 text-lg">
-            📄 GENERATE & DOWNLOAD PDF
-          </button>
-        </form>
+            <button type="submit" className="w-full bg-indigo-600 text-white font-semibold py-3.5 rounded-xl hover:bg-indigo-500 transition flex items-center justify-center gap-2">
+              📄 Generate & Download PDF
+            </button>
+          </form>
+        </div>
       </div>
-      </div>
+    </div>
     )
   }
 
   // ====================================================
   // MAIN RENDER (LAYOUT WITH ROUTES)
   // ====================================================
+
+  const navItems = [
+    { path: '/dashboard', icon: '📊', label: 'Dashboard', adminOnly: false },
+    { path: '/vendors', icon: '🏢', label: 'Mitra Vendor', adminOnly: false },
+    { path: '/pos', icon: '💳', label: 'POS & Billing', adminOnly: false },
+    { path: '/contract', icon: '📄', label: 'Legal Kontrak', adminOnly: true },
+  ]
+
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
+    <div className="min-h-screen bg-[#0f0f13]">
       {isAuthenticated && (
-        <nav className="bg-black text-white p-4 shadow-lg sticky top-0 z-10">
-          <div className="max-w-7xl mx-auto flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-black">VENDOR POS</h1>
-              <p className="text-xs text-gray-400 tracking-widest">SISTEM TRANSAKSI ELEKTRONIK</p>
+        <div className="flex h-screen overflow-hidden">
+          {/* SIDEBAR */}
+          <aside className="w-64 bg-[#16161d] border-r border-[#2a2a3a] flex flex-col shrink-0">
+            {/* Brand */}
+            <div className="p-5 border-b border-[#2a2a3a]">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black text-sm shadow-lg shadow-indigo-500/20">VP</div>
+                <div>
+                  <h1 className="text-base font-extrabold text-white tracking-tight">VENDOR POS</h1>
+                  <p className="text-[10px] text-gray-500 tracking-widest">TRANSAKSI ELEKTRONIK</p>
+                </div>
+              </div>
             </div>
-            <div className="flex gap-4 items-center">
-              <span className="text-sm font-bold text-gray-400 mr-4 hidden md:block">Halo, {userRole === 'ADMIN' ? 'Admin' : 'User'}</span>
-              <Link to="/vendors" className={`px-4 py-2 font-bold rounded transition ${location.pathname === '/vendors' ? 'bg-white text-black' : 'hover:bg-gray-800'}`}>Mitra Supplier</Link>
-              <Link to="/pos" className={`px-4 py-2 font-bold rounded transition ${location.pathname === '/pos' ? 'bg-white text-black' : 'hover:bg-gray-800'}`}>POS & Billing</Link>
-              {userRole === 'ADMIN' && (
-                <Link to="/contract" className={`px-4 py-2 font-bold rounded transition ${location.pathname === '/contract' ? 'bg-white text-black' : 'hover:bg-gray-800'}`}>Legal Kontrak</Link>
-              )}
-              <button onClick={handleLogout} className="px-4 py-2 font-bold text-red-400 hover:text-red-300 hover:bg-red-400/10 ml-4 border border-red-400 rounded transition">Logout</button>
+
+            {/* Nav Links */}
+            <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+              <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest px-3 pt-2 pb-2">Menu Utama</p>
+              {navItems.filter(item => !item.adminOnly || userRole === 'ADMIN').map(item => (
+                <Link key={item.path} to={item.path}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                    location.pathname === item.path
+                      ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
+                      : 'text-gray-400 hover:text-white hover:bg-white/5'
+                  }`}>
+                  <span className="text-lg">{item.icon}</span> {item.label}
+                </Link>
+              ))}
+            </nav>
+
+            {/* User Info */}
+            <div className="p-4 border-t border-[#2a2a3a]">
+              <div className="flex items-center gap-3 mb-3">
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold ${userRole === 'ADMIN' ? 'bg-gradient-to-br from-amber-500 to-orange-600' : 'bg-gradient-to-br from-sky-500 to-blue-600'}`}>
+                  {userRole === 'ADMIN' ? 'A' : 'U'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-white truncate">{userRole === 'ADMIN' ? 'Administrator' : 'Staff Kasir'}</p>
+                  <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full mt-0.5 ${userRole === 'ADMIN' ? 'bg-amber-500/10 text-amber-400' : 'bg-sky-500/10 text-sky-400'}`}>
+                    {userRole}
+                  </span>
+                </div>
+              </div>
+              <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-red-500/20 text-red-400 text-xs font-semibold hover:bg-red-500/10 transition">
+                Logout
+              </button>
             </div>
-          </div>
-        </nav>
+          </aside>
+
+          {/* MAIN CONTENT */}
+          <main className="flex-1 overflow-y-auto">
+            <div className="p-6 max-w-7xl mx-auto">
+              <Routes>
+                <Route path="/dashboard" element={renderDashboardPage()} />
+                <Route path="/vendors" element={renderVendorPage()} />
+                <Route path="/pos" element={renderPosPage()} />
+                <Route path="/contract" element={renderContractPage()} />
+                <Route path="*" element={<Navigate to="/dashboard" />} />
+              </Routes>
+            </div>
+          </main>
+        </div>
       )}
 
-      <div className={isAuthenticated ? "max-w-7xl mx-auto p-6 mt-6" : ""}>
+      {!isAuthenticated && (
         <Routes>
-          <Route path="/" element={!isAuthenticated ? renderLandingPage() : <Navigate to="/vendors" />} />
-          <Route path="/login" element={!isAuthenticated ? renderLoginPage() : <Navigate to="/vendors" />} />
-          <Route path="/vendors" element={isAuthenticated ? renderVendorPage() : <Navigate to="/login" />} />
-          <Route path="/pos" element={isAuthenticated ? renderPosPage() : <Navigate to="/login" />} />
-          <Route path="/contract" element={isAuthenticated ? renderContractPage() : <Navigate to="/login" />} />
-          
-          {/* Default redirect */}
-          <Route path="*" element={<Navigate to={isAuthenticated ? "/vendors" : "/"} />} />
+          <Route path="/" element={renderLandingPage()} />
+          <Route path="/login" element={renderLoginPage()} />
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
-      </div>
+      )}
 
-      {/* MODALS (Global for Vendor Page) */}
       <EditModal isOpen={editModalOpen} vendor={selectedVendor} onClose={() => setEditModalOpen(false)} onSave={handleUpdateVendor} isLoading={isModalLoading}/>
       <DeleteModal isOpen={deleteModalOpen} vendor={selectedVendor} onClose={() => setDeleteModalOpen(false)} onConfirm={handleDeleteVendor} isLoading={isModalLoading}/>
     </div>

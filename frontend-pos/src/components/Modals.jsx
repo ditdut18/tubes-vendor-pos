@@ -1,142 +1,76 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export function EditModal({ isOpen, vendor, onClose, onSave, isLoading }) {
-  const [formData, setFormData] = useState(vendor || {
-    namaPerusahaan: '',
-    alamat: '',
-    kontak: '',
-    statusKerjasama: ''
-  })
-
+  const [formData, setFormData] = useState({ namaPerusahaan: '', alamat: '', kontak: '', statusKerjasama: '' })
   const [errors, setErrors] = useState({})
+
+  useEffect(() => {
+    if (vendor) setFormData({ namaPerusahaan: vendor.namaPerusahaan, alamat: vendor.alamat, kontak: vendor.kontak, statusKerjasama: vendor.statusKerjasama })
+  }, [vendor])
 
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }))
-    }
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }))
   }
 
   const validateForm = () => {
     const newErrors = {}
-    if (!formData.namaPerusahaan.trim()) newErrors.namaPerusahaan = 'Nama perusahaan tidak boleh kosong'
-    if (formData.namaPerusahaan.length < 3) newErrors.namaPerusahaan = 'Minimal 3 karakter'
-    if (!formData.alamat.trim()) newErrors.alamat = 'Alamat tidak boleh kosong'
-    if (!formData.kontak.trim()) newErrors.kontak = 'Kontak tidak boleh kosong'
-    if (!formData.statusKerjasama) newErrors.statusKerjasama = 'Status kerjasama harus dipilih'
+    if (!formData.namaPerusahaan.trim()) newErrors.namaPerusahaan = 'Wajib diisi'
+    if (!formData.alamat.trim()) newErrors.alamat = 'Wajib diisi'
+    if (!formData.kontak.trim()) newErrors.kontak = 'Wajib diisi'
+    if (!formData.statusKerjasama) newErrors.statusKerjasama = 'Wajib dipilih'
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    if (validateForm()) {
-      onSave(formData)
-    }
+    if (validateForm()) onSave(formData)
   }
 
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white border-2 border-black max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="bg-black text-white px-8 py-6 flex justify-between items-center sticky top-0">
-          <h2 className="text-2xl font-black">Edit Vendor</h2>
-          <button
-            onClick={onClose}
-            className="text-2xl font-bold hover:opacity-70 transition"
-          >
-            ×
-          </button>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+      <div className="w-full max-w-lg rounded-2xl border border-[#2a2a3a] bg-[#1c1c26] shadow-2xl overflow-hidden">
+        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-5 flex justify-between items-center">
+          <div>
+            <h2 className="text-xl font-bold text-white">Edit Data Vendor</h2>
+            <p className="text-indigo-200 text-xs mt-0.5">{vendor?.namaPerusahaan}</p>
+          </div>
+          <button onClick={onClose} className="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center text-white text-lg transition">×</button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-8 space-y-5">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {[
+            { name: 'namaPerusahaan', label: 'Nama Perusahaan', ph: 'PT. Kreatif Solusi' },
+            { name: 'alamat', label: 'Alamat', ph: 'Jl. Merdeka No. 12' },
+            { name: 'kontak', label: 'Kontak', ph: '08xx-xxxx-xxxx' },
+          ].map(f => (
+            <div key={f.name}>
+              <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">{f.label}</label>
+              <input type="text" name={f.name} value={formData[f.name]} onChange={handleChange} placeholder={f.ph}
+                className={errors[f.name] ? '!border-red-500' : ''} />
+              {errors[f.name] && <p className="text-red-400 text-xs mt-1">{errors[f.name]}</p>}
+            </div>
+          ))}
           <div>
-            <label className="block text-sm font-bold text-black mb-2">Nama Perusahaan *</label>
-            <input
-              type="text"
-              name="namaPerusahaan"
-              value={formData.namaPerusahaan}
-              onChange={handleChange}
-              className={`w-full bg-white border-2 px-4 py-3 text-base text-black placeholder-gray-500 focus:outline-none focus:bg-black focus:text-white transition ${
-                errors.namaPerusahaan ? 'border-red-500' : 'border-black'
-              }`}
-              placeholder="PT. Kreatif Solusi"
-            />
-            {errors.namaPerusahaan && (
-              <p className="text-red-600 text-xs font-semibold mt-1">{errors.namaPerusahaan}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-bold text-black mb-2">Alamat *</label>
-            <input
-              type="text"
-              name="alamat"
-              value={formData.alamat}
-              onChange={handleChange}
-              className={`w-full bg-white border-2 px-4 py-3 text-base text-black placeholder-gray-500 focus:outline-none focus:bg-black focus:text-white transition ${
-                errors.alamat ? 'border-red-500' : 'border-black'
-              }`}
-              placeholder="Jl. Merdeka No. 12"
-            />
-            {errors.alamat && (
-              <p className="text-red-600 text-xs font-semibold mt-1">{errors.alamat}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-bold text-black mb-2">Kontak *</label>
-            <input
-              type="text"
-              name="kontak"
-              value={formData.kontak}
-              onChange={handleChange}
-              className={`w-full bg-white border-2 px-4 py-3 text-base text-black placeholder-gray-500 focus:outline-none focus:bg-black focus:text-white transition ${
-                errors.kontak ? 'border-red-500' : 'border-black'
-              }`}
-              placeholder="08xx-xxxx-xxxx"
-            />
-            {errors.kontak && (
-              <p className="text-red-600 text-xs font-semibold mt-1">{errors.kontak}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-bold text-black mb-2">Status Kerjasama *</label>
-            <select
-              name="statusKerjasama"
-              value={formData.statusKerjasama}
-              onChange={handleChange}
-              className={`w-full bg-white border-2 px-4 py-3 text-base text-black focus:outline-none focus:bg-black focus:text-white transition ${
-                errors.statusKerjasama ? 'border-red-500' : 'border-black'
-              }`}
-            >
+            <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Status Kerjasama</label>
+            <select name="statusKerjasama" value={formData.statusKerjasama} onChange={handleChange}
+              className={errors.statusKerjasama ? '!border-red-500' : ''}>
               <option value="">Pilih Status...</option>
               <option value="Aktif">Aktif</option>
               <option value="Pending">Pending</option>
               <option value="Berakhir">Berakhir</option>
             </select>
-            {errors.statusKerjasama && (
-              <p className="text-red-600 text-xs font-semibold mt-1">{errors.statusKerjasama}</p>
-            )}
+            {errors.statusKerjasama && <p className="text-red-400 text-xs mt-1">{errors.statusKerjasama}</p>}
           </div>
 
-          <div className="flex gap-4 pt-6 border-t-2 border-black">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 bg-white border-2 border-black text-black px-6 py-3 text-sm font-bold uppercase tracking-wide hover:bg-gray-100 transition"
-            >
-              Batal
-            </button>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="flex-1 bg-black border-2 border-black text-white px-6 py-3 text-sm font-bold uppercase tracking-wide hover:bg-gray-900 transition disabled:opacity-50"
-            >
-              {isLoading ? 'Menyimpan...' : 'Simpan'}
+          <div className="flex gap-3 pt-4 border-t border-[#2a2a3a]">
+            <button type="button" onClick={onClose} className="flex-1 py-3 rounded-xl border border-[#2a2a3a] text-gray-400 font-semibold text-sm hover:bg-[#2a2a3a] transition">Batal</button>
+            <button type="submit" disabled={isLoading} className="flex-1 py-3 rounded-xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-500 transition disabled:opacity-50">
+              {isLoading ? 'Menyimpan...' : 'Simpan Perubahan'}
             </button>
           </div>
         </form>
@@ -149,41 +83,31 @@ export function DeleteModal({ isOpen, vendor, onClose, onConfirm, isLoading }) {
   if (!isOpen || !vendor) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white border-2 border-black max-w-sm w-full mx-4">
-        <div className="bg-red-600 text-white px-8 py-6 flex justify-between items-center">
-          <h2 className="text-2xl font-black">Hapus Vendor</h2>
-          <button
-            onClick={onClose}
-            className="text-2xl font-bold hover:opacity-70 transition"
-          >
-            ×
-          </button>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+      <div className="w-full max-w-sm rounded-2xl border border-[#2a2a3a] bg-[#1c1c26] shadow-2xl overflow-hidden">
+        <div className="bg-gradient-to-r from-red-600 to-rose-600 px-6 py-5 flex justify-between items-center">
+          <h2 className="text-xl font-bold text-white">Hapus Vendor</h2>
+          <button onClick={onClose} className="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center text-white text-lg transition">×</button>
         </div>
 
-        <div className="p-8">
-          <p className="text-gray-700 mb-2">Apakah Anda yakin ingin menghapus vendor ini?</p>
-          <p className="text-lg font-bold text-black mb-6">
-            {vendor.namaPerusahaan}
-          </p>
+        <div className="p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500 text-xl">⚠️</div>
+            <div>
+              <p className="text-gray-400 text-sm">Anda akan menghapus:</p>
+              <p className="text-white font-bold">{vendor.namaPerusahaan}</p>
+            </div>
+          </div>
 
-          <p className="text-sm text-gray-600 mb-8 bg-red-50 border-l-4 border-red-600 px-4 py-3">
-            ⚠️ Tindakan ini tidak dapat dibatalkan. Data vendor akan dihapus secara permanen.
-          </p>
+          <div className="bg-red-500/5 border border-red-500/20 rounded-xl px-4 py-3 mb-6">
+            <p className="text-red-400 text-xs">Tindakan ini tidak dapat dibatalkan. Semua data vendor akan dihapus permanen dari database.</p>
+          </div>
 
-          <div className="flex gap-4">
-            <button
-              onClick={onClose}
-              className="flex-1 bg-white border-2 border-black text-black px-6 py-3 text-sm font-bold uppercase tracking-wide hover:bg-gray-100 transition"
-            >
-              Batal
-            </button>
-            <button
-              onClick={() => onConfirm(vendor.id)}
-              disabled={isLoading}
-              className="flex-1 bg-red-600 border-2 border-red-600 text-white px-6 py-3 text-sm font-bold uppercase tracking-wide hover:bg-red-700 transition disabled:opacity-50"
-            >
-              {isLoading ? 'Menghapus...' : 'Hapus'}
+          <div className="flex gap-3">
+            <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-[#2a2a3a] text-gray-400 font-semibold text-sm hover:bg-[#2a2a3a] transition">Batal</button>
+            <button onClick={() => onConfirm(vendor.id)} disabled={isLoading}
+              className="flex-1 py-3 rounded-xl bg-red-600 text-white font-semibold text-sm hover:bg-red-500 transition disabled:opacity-50">
+              {isLoading ? 'Menghapus...' : 'Hapus Permanen'}
             </button>
           </div>
         </div>
