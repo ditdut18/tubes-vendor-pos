@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -31,7 +32,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/vendors")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:5173")
 public class VendorController {
 
     @Autowired
@@ -42,6 +43,7 @@ public class VendorController {
      * Query parameters: page (default 0), size (default 10), sortBy (default id), sortDir (default ASC)
      */
     @GetMapping
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<?> getAllVendors(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -71,6 +73,7 @@ public class VendorController {
      * Get vendor by ID
      */
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<?> getVendorById(@PathVariable Long id) {
         var vendor = vendorRepository.findById(id);
         if (vendor.isPresent()) {
@@ -85,6 +88,7 @@ public class VendorController {
      * Create new vendor with validation
      */
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createVendor(@Valid @RequestBody Vendor vendor, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             List<String> errors = bindingResult.getAllErrors()
@@ -108,6 +112,7 @@ public class VendorController {
      * Update vendor by ID
      */
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateVendor(@PathVariable Long id, @Valid @RequestBody Vendor vendorDetails, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             List<String> errors = bindingResult.getAllErrors()
@@ -143,6 +148,7 @@ public class VendorController {
      * Delete vendor by ID
      */
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteVendor(@PathVariable Long id) {
         var vendorOptional = vendorRepository.findById(id);
         if (!vendorOptional.isPresent()) {

@@ -1,10 +1,11 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { Routes, Route, Navigate, useNavigate, Link, useLocation } from 'react-router-dom'
 import axios from 'axios'
 import { jsPDF } from 'jspdf'
 import { EditModal, DeleteModal } from './components/Modals'
 import { API_CONFIG, getStatusColor, VENDOR_STATUS_OPTIONS } from './config'
 
+axios.defaults.withCredentials = true
 const BACKEND_URL = `${API_CONFIG.BACKEND_URL}/vendors`
 
 export default function App() {
@@ -14,12 +15,102 @@ export default function App() {
   // ----------------------------------------------------
   // 1. SECURE BY DESIGN (Login & Auth State)
   // ----------------------------------------------------
-  const [isAuthenticated, setIsAuthenticated] = useState(() => localStorage.getItem('isAuth') === 'true')
+  const [authToken, setAuthToken] = useState(() => localStorage.getItem('authToken') || '')
+  const [isAuthenticated, setIsAuthenticated] = useState(() => !!localStorage.getItem('authToken'))
   const [userRole, setUserRole] = useState(() => localStorage.getItem('userRole') || '') // 'ADMIN' or 'USER'
   const [authData, setAuthData] = useState({ username: '', password: '' })
   const [authError, setAuthError] = useState('')
   const [isAuthLoading, setIsAuthLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const isRefreshingRef = useRef(false)
+  const failedQueueRef = useRef([])
+
+  useEffect(() => {
+    if (authToken) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${authToken}`
+    } else {
+      delete axios.defaults.headers.common['Authorization']
+    }
+  }, [authToken])
+
+  const handleLogout = useCallback(() => {
+    setIsAuthenticated(false)
+    setUserRole('')
+    setAuthToken('')
+    localStorage.removeItem('authToken')
+    localStorage.removeItem('userRole')
+    navigate('/')
+  }, [navigate])
+
+  const processQueue = (error, token = null) => {
+    failedQueueRef.current.forEach(prom => {
+      if (error) {
+        prom.reject(error)
+      } else {
+        prom.resolve(token)
+      }
+    })
+    failedQueueRef.current = []
+  }
+
+  const refreshAccessToken = useCallback(async () => {
+    try {
+      const response = await axios.post(`${API_CONFIG.BACKEND_URL}/auth/refresh`)
+      const token = response.data.token || ''
+      if (token) {
+        setAuthToken(token)
+        localStorage.setItem('authToken', token)
+      }
+      return token
+    } catch (refreshError) {
+      handleLogout()
+      throw refreshError
+    }
+  }, [handleLogout])
+
+  useEffect(() => {
+    const responseInterceptor = axios.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        const originalRequest = error.config
+        if (originalRequest?.url?.includes('/auth/refresh') || originalRequest?.url?.includes('/auth/login')) {
+          return Promise.reject(error)
+        }
+
+        if (error.response?.status === 401 && !originalRequest._retry) {
+          if (isRefreshingRef.current) {
+            return new Promise((resolve, reject) => {
+              failedQueueRef.current.push({ resolve, reject })
+            }).then((token) => {
+              originalRequest.headers['Authorization'] = `Bearer ${token}`
+              return axios(originalRequest)
+            })
+          }
+
+          originalRequest._retry = true
+          isRefreshingRef.current = true
+
+          return new Promise(async (resolve, reject) => {
+            try {
+              const newToken = await refreshAccessToken()
+              processQueue(null, newToken)
+              originalRequest.headers['Authorization'] = `Bearer ${newToken}`
+              resolve(await axios(originalRequest))
+            } catch (refreshError) {
+              processQueue(refreshError, null)
+              reject(refreshError)
+            } finally {
+              isRefreshingRef.current = false
+            }
+          })
+        }
+
+        return Promise.reject(error)
+      }
+    )
+
+    return () => axios.interceptors.response.eject(responseInterceptor)
+  }, [refreshAccessToken])
 
   const handleAuth = async (e) => {
     e.preventDefault()
@@ -36,9 +127,11 @@ export default function App() {
       const response = await axios.post(`${API_CONFIG.BACKEND_URL}/auth/login`, authData)
       if (response.status === 200) {
         const role = response.data.role || 'USER'
+        const token = response.data.token || ''
         setIsAuthenticated(true)
         setUserRole(role)
-        localStorage.setItem('isAuth', 'true')
+        setAuthToken(token)
+        localStorage.setItem('authToken', token)
         localStorage.setItem('userRole', role)
         navigate('/dashboard')
       }
@@ -47,14 +140,6 @@ export default function App() {
     } finally {
       setIsAuthLoading(false)
     }
-  }
-
-  const handleLogout = () => {
-    setIsAuthenticated(false)
-    setUserRole('')
-    localStorage.removeItem('isAuth')
-    localStorage.removeItem('userRole')
-    navigate('/')
   }
 
   // ----------------------------------------------------

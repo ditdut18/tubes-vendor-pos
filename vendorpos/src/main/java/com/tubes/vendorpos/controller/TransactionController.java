@@ -7,6 +7,7 @@ import com.tubes.vendorpos.repository.TransactionRepository;
 import com.tubes.vendorpos.repository.VendorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -15,7 +16,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/transactions")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:5173")
 public class TransactionController {
 
     @Autowired
@@ -24,6 +25,7 @@ public class TransactionController {
     @Autowired
     private VendorRepository vendorRepository;
 
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PostMapping("/pay")
     public ResponseEntity<?> processPayment(@RequestBody PaymentRequest request) {
         if (request.getVendorId() == null || request.getAmount() == null || request.getPaymentMethod() == null) {
@@ -47,6 +49,7 @@ public class TransactionController {
         return ResponseEntity.ok(tx);
     }
     
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/confirm/{id}")
     public ResponseEntity<?> confirmPayment(@PathVariable Long id) {
         Transaction tx = transactionRepository.findById(id).orElse(null);
@@ -58,11 +61,13 @@ public class TransactionController {
         return ResponseEntity.ok(tx);
     }
     
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping
     public ResponseEntity<List<Transaction>> getAllTransactions() {
         return ResponseEntity.ok(transactionRepository.findAllByOrderByTransactionDateDesc());
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteTransaction(@PathVariable Long id) {
         if (!transactionRepository.existsById(id)) {
