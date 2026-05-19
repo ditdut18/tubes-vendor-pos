@@ -632,22 +632,24 @@ export default function App() {
               placeholder="Masukkan username"
             />
           </div>
-          <div className="relative">
+          <div>
             <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">Password</label>
-            <input 
-              type={showPassword ? "text" : "password"} 
-              value={authData.password} 
-              onChange={e => setAuthData({...authData, password: e.target.value})} 
-              className="w-full bg-black/40 border border-white/10 text-white p-4 rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/50 focus:outline-none transition-all placeholder-gray-600 pr-12" 
-              placeholder="••••••••"
-            />
-            <button 
-              type="button" 
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-10 text-gray-400 hover:text-white transition-colors"
-            >
-              {showPassword ? "👁️" : "👁️‍🗨️"}
-            </button>
+            <div className="relative">
+              <input 
+                type={showPassword ? "text" : "password"} 
+                value={authData.password} 
+                onChange={e => setAuthData({...authData, password: e.target.value})} 
+                className="w-full bg-black/40 border border-white/10 text-white p-4 rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/50 focus:outline-none transition-all placeholder-gray-600 pr-12" 
+                placeholder="••••••••"
+              />
+              <button 
+                type="button" 
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+              >
+                {showPassword ? "👁️" : "👁️‍🗨️"}
+              </button>
+            </div>
           </div>
           
           <button 
@@ -1008,7 +1010,6 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       )}
-
       <EditModal isOpen={editModalOpen} vendor={selectedVendor} onClose={() => setEditModalOpen(false)} onSave={handleUpdateVendor} isLoading={isModalLoading}/>
       <DeleteModal isOpen={deleteModalOpen} vendor={selectedVendor} onClose={() => setDeleteModalOpen(false)} onConfirm={handleDeleteVendor} isLoading={isModalLoading}/>
     </div>
