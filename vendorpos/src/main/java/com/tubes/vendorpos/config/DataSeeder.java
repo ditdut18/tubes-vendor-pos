@@ -14,16 +14,13 @@ public class DataSeeder {
     @Bean
     public CommandLineRunner loadData(UserRepository userRepository) {
         return args -> {
-            // Cek dan update/insert Admin
             Optional<User> adminOpt = userRepository.findByUsername("admin");
             if (adminOpt.isEmpty()) {
                 userRepository.save(new User("admin", "secure123", "ADMIN"));
             } else {
                 User admin = adminOpt.get();
-                if (admin.getRole() == null || admin.getRole().isEmpty()) {
-                    admin.setRole("ADMIN");
-                    userRepository.save(admin);
-                }
+                admin.setRole("ADMIN");
+                userRepository.save(admin);
             }
 
             // Cek dan insert User biasa

@@ -95,6 +95,25 @@ export default function App() {
   const [paymentStatusText, setPaymentStatusText] = useState('')
   const [receipt, setReceipt] = useState(null)
   const [transactions, setTransactions] = useState([])
+  const [cashReceived, setCashReceived] = useState('')
+  const [paymentSubOption, setPaymentSubOption] = useState('')
+  const [isGatewayOpen, setIsGatewayOpen] = useState(false)
+  const [gatewayTx, setGatewayTx] = useState(null)
+  const [isSimulatingPayment, setIsSimulatingPayment] = useState(false)
+  const [txSearchTerm, setTxSearchTerm] = useState('')
+  const [txStatusFilter, setTxStatusFilter] = useState('')
+
+  const handleVendorChange = (vendorId) => {
+    setPosSelectedVendor(vendorId)
+    if (vendorId) {
+      const baseAmounts = [500000, 750000, 1200000, 1500000, 2000000, 2500000, 3000000, 4500000]
+      const idNum = parseInt(vendorId, 10) || 0
+      const fixedAmount = baseAmounts[idNum % baseAmounts.length]
+      setPosAmount(fixedAmount.toString())
+    } else {
+      setPosAmount('')
+    }
+  }
 
   // ----------------------------------------------------
   // CONTRACT GENERATION STATE
@@ -213,11 +232,27 @@ export default function App() {
     return matchesSearch && matchesStatus
   })
 
+  const filteredTransactions = transactions.filter(tx => {
+    const matchesSearch = tx.vendor.namaPerusahaan.toLowerCase().includes(txSearchTerm.toLowerCase()) || tx.receiptNumber.toLowerCase().includes(txSearchTerm.toLowerCase())
+    const matchesStatus = !txStatusFilter || tx.status === txStatusFilter
+    return matchesSearch && matchesStatus
+  })
+
   // ====================================================
   // POS & PAYMENT SYSTEM FUNCTIONS
   // ====================================================
   const handleProcessPayment = async (e) => {
     e.preventDefault()
+
+    if (paymentMethod === 'Cash') {
+      const received = Number(cashReceived)
+      const total = Number(posAmount)
+      if (isNaN(received) || received < total) {
+        alert("Nominal uang yang dibayar kurang dari total tagihan!")
+        return
+      }
+    }
+
     setIsProcessingPayment(true)
     setReceipt(null)
     
@@ -225,21 +260,37 @@ export default function App() {
       setPaymentStatusText('CREATING INVOICE...')
       await new Promise(r => setTimeout(r, 600))
 
-      const payload = { vendorId: posSelectedVendor, amount: posAmount, paymentMethod }
+      const finalPaymentMethod = (paymentMethod === 'Card' || paymentMethod === 'E-Wallet') && paymentSubOption
+        ? `${paymentMethod} (${paymentSubOption})`
+        : paymentMethod;
+
+      const payload = { vendorId: posSelectedVendor, amount: posAmount, paymentMethod: finalPaymentMethod }
       const response = await axios.post(`${API_CONFIG.BACKEND_URL}/transactions/pay`, payload)
       
       const tx = response.data
-      setReceipt({
+      const newReceipt = {
         id: tx.id,
         transactionId: tx.receiptNumber,
         date: new Date(tx.transactionDate).toLocaleString('id-ID'),
         vendor: tx.vendor.namaPerusahaan,
         amount: tx.amount,
         method: tx.paymentMethod,
-        status: tx.status
-      })
+        status: tx.status,
+        cashReceived: paymentMethod === 'Cash' ? Number(cashReceived) : null,
+        cashReturn: paymentMethod === 'Cash' ? Number(cashReceived) - Number(posAmount) : null
+      }
+      setReceipt(newReceipt)
+      
+      if (paymentMethod === 'Card' || paymentMethod === 'E-Wallet') {
+        setGatewayTx(newReceipt)
+        setIsGatewayOpen(true)
+      }
+
+      setPosSelectedVendor('')
       setPosAmount('')
       setPaymentMethod('')
+      setCashReceived('')
+      setPaymentSubOption('')
       fetchTransactions()
     } catch (err) {
       alert("Gagal membuat tagihan: " + (err.response?.data || "Cek Backend"))
@@ -266,15 +317,10 @@ export default function App() {
       
       const response = await axios.put(`${API_CONFIG.BACKEND_URL}/transactions/confirm/${receipt.id}`)
       const tx = response.data
-      setReceipt({
-        id: tx.id,
-        transactionId: tx.receiptNumber,
-        date: new Date(tx.transactionDate).toLocaleString('id-ID'),
-        vendor: tx.vendor.namaPerusahaan,
-        amount: tx.amount,
-        method: tx.paymentMethod,
+      setReceipt(prev => ({
+        ...prev,
         status: tx.status
-      })
+      }))
       fetchTransactions()
     } catch (err) {
       alert("Gagal konfirmasi pembayaran.")
@@ -282,6 +328,79 @@ export default function App() {
       setIsConfirmingPayment(false)
       setPaymentStatusText('')
     }
+  }
+
+  const handleSimulatePaymentSuccess = async () => {
+    if (!gatewayTx) return
+    setIsSimulatingPayment(true)
+    try {
+      await axios.put(`${API_CONFIG.BACKEND_URL}/transactions/confirm/${gatewayTx.id}`)
+      setReceipt(prev => ({
+        ...prev,
+        status: 'PAID - SECURE'
+      }))
+      fetchTransactions()
+      setTimeout(() => {
+        setIsGatewayOpen(false)
+        setGatewayTx(null)
+        setIsSimulatingPayment(false)
+        alert("Simulasi Pembayaran Berhasil! Pembayaran telah diverifikasi secara aman oleh Gateway.")
+      }, 1000)
+    } catch (err) {
+      alert("Gagal mensimulasikan pembayaran.")
+      setIsSimulatingPayment(false)
+    }
+  }
+
+  const handlePrintReceipt = () => {
+    if (!receipt) return;
+    
+    let cashDetailsHtml = '';
+    if (receipt.method.includes('Cash') && receipt.cashReceived) {
+      cashDetailsHtml = `
+        <div class="flex"><span>Bayar:</span><span>Rp ${Number(receipt.cashReceived).toLocaleString('id-ID')}</span></div>
+        <div class="flex"><span>Kembali:</span><span>Rp ${Number(receipt.cashReturn).toLocaleString('id-ID')}</span></div>
+      `;
+    }
+
+    const printWindow = window.open('', '_blank', 'width=350,height=600')
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Print Receipt</title>
+          <style>
+            body { font-family: 'Courier New', Courier, monospace; font-size: 12px; padding: 20px; width: 300px; color: #000; }
+            .text-center { text-align: center; }
+            .divider { border-top: 1px dashed #000; margin: 10px 0; }
+            .flex { display: flex; justify-content: space-between; }
+            .bold { font-weight: bold; }
+          </style>
+        </head>
+        <body>
+          <div class="text-center">
+            <h3 style="margin:0;">VENDOR POS</h3>
+            <p style="margin:2px 0;">Official Receipt</p>
+          </div>
+          <div class="divider"></div>
+          <div class="flex"><span>ID:</span><span>\${receipt.transactionId}</span></div>
+          <div class="flex"><span>Tanggal:</span><span>\${receipt.date}</span></div>
+          <div class="flex"><span>Vendor:</span><span>\${receipt.vendor}</span></div>
+          <div class="flex"><span>Metode:</span><span>\${receipt.method}</span></div>
+          <div class="divider"></div>
+          <div class="flex bold"><span>TOTAL:</span><span>Rp \${Number(receipt.amount).toLocaleString('id-ID')}</span></div>
+          \${cashDetailsHtml}
+          <div class="divider"></div>
+          <div class="text-center" style="margin-top:20px;">
+            <p style="margin:0;">Terima Kasih</p>
+            <p style="margin:2px 0;">Transaksi Terverifikasi Aman</p>
+          </div>
+          <script>
+            window.onload = function() { window.print(); window.close(); }
+          </script>
+        </body>
+      </html>
+    `)
+    printWindow.document.close()
   }
 
   const handleDownloadReceipt = () => {
@@ -317,9 +436,14 @@ export default function App() {
     doc.setFont("helvetica", "normal")
     doc.setFontSize(10)
     doc.text("Status       : SUCCESS (SECURED)", 20, 115)
+
+    if (receipt.method.includes('Cash') && receipt.cashReceived !== null && receipt.cashReceived !== undefined) {
+      doc.text(`Bayar (Cash) : Rp ${Number(receipt.cashReceived).toLocaleString('id-ID')}`, 20, 122)
+      doc.text(`Kembalian    : Rp ${Number(receipt.cashReturn).toLocaleString('id-ID')}`, 20, 129)
+    }
     
     doc.setFontSize(9)
-    doc.text("Dokumen ini adalah bukti pembayaran elektronik yang sah.", 105, 140, null, null, "center")
+    doc.text("Dokumen ini adalah bukti pembayaran elektronik yang sah.", 105, 145, null, null, "center")
     
     doc.save(`Invoice_${receipt.transactionId}.pdf`)
   }
@@ -327,6 +451,12 @@ export default function App() {
   const handleAdminConfirmTransaction = async (id) => {
     try {
       await axios.put(`${API_CONFIG.BACKEND_URL}/transactions/confirm/${id}`)
+      if (receipt && receipt.id === id) {
+        setReceipt(prev => ({
+          ...prev,
+          status: 'PAID - SECURE'
+        }))
+      }
       fetchTransactions()
     } catch (err) {
       alert("Gagal mengkonfirmasi transaksi.")
@@ -755,7 +885,7 @@ export default function App() {
           <form onSubmit={handleProcessPayment} className="space-y-4">
             <div>
               <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Vendor (Biller)</label>
-              <select required value={posSelectedVendor} onChange={e => setPosSelectedVendor(e.target.value)}>
+              <select required value={posSelectedVendor} onChange={e => handleVendorChange(e.target.value)}>
                 <option value="">-- Pilih Vendor --</option>
                 {vendors.map(v => <option key={v.id} value={v.id}>{v.namaPerusahaan}</option>)}
               </select>
@@ -769,12 +899,63 @@ export default function App() {
               <div className="grid grid-cols-3 gap-2">
                 {[{v:'Cash',i:'💵',l:'Tunai'},{v:'Card',i:'💳',l:'Kartu'},{v:'E-Wallet',i:'📱',l:'E-Wallet'}].map(m => (
                   <label key={m.v} className={`p-3 rounded-xl text-center cursor-pointer text-sm font-medium transition-all border ${paymentMethod === m.v ? 'border-indigo-500 bg-indigo-500/10 text-indigo-400' : 'border-[#2a2a3a] text-gray-400 hover:border-gray-500'}`}>
-                    <input required type="radio" className="!hidden" name="payment" value={m.v} onChange={e => setPaymentMethod(e.target.value)} />
+                    <input required type="radio" className="!hidden" name="payment" value={m.v} onChange={e => {
+                      setPaymentMethod(e.target.value);
+                      setCashReceived('');
+                      if (e.target.value === 'Card') {
+                        setPaymentSubOption('BCA');
+                      } else if (e.target.value === 'E-Wallet') {
+                        setPaymentSubOption('GoPay');
+                      } else {
+                        setPaymentSubOption('');
+                      }
+                    }} />
                     <span className="text-lg block mb-1">{m.i}</span>{m.l}
                   </label>
                 ))}
               </div>
             </div>
+            {paymentMethod === 'Card' && (
+              <div className="space-y-3 bg-[#13131a] p-4 rounded-xl border border-[#2a2a3a] animate-fade-in">
+                <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Pilih Bank</label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {['Mandiri', 'BCA', 'BRI', 'BNI', 'CIMB Niaga'].map(bank => (
+                    <label key={bank} className={`p-2.5 rounded-lg text-center cursor-pointer text-xs font-semibold transition-all border ${paymentSubOption === bank ? 'border-indigo-500 bg-indigo-500/10 text-indigo-400 font-bold' : 'border-[#2a2a3a] text-gray-400 hover:border-gray-500'}`}>
+                      <input required type="radio" className="!hidden" name="bankOption" value={bank} checked={paymentSubOption === bank} onChange={e => setPaymentSubOption(e.target.value)} />
+                      <span>{bank}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+            {paymentMethod === 'E-Wallet' && (
+              <div className="space-y-3 bg-[#13131a] p-4 rounded-xl border border-[#2a2a3a] animate-fade-in">
+                <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Pilih Dompet Digital</label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {['GoPay', 'OVO', 'DANA', 'ShopeePay', 'LinkAja'].map(wallet => (
+                    <label key={wallet} className={`p-2.5 rounded-lg text-center cursor-pointer text-xs font-semibold transition-all border ${paymentSubOption === wallet ? 'border-indigo-500 bg-indigo-500/10 text-indigo-400 font-bold' : 'border-[#2a2a3a] text-gray-400 hover:border-gray-500'}`}>
+                      <input required type="radio" className="!hidden" name="walletOption" value={wallet} checked={paymentSubOption === wallet} onChange={e => setPaymentSubOption(e.target.value)} />
+                      <span>{wallet}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+            {paymentMethod === 'Cash' && posAmount && (
+              <div className="space-y-3 bg-[#13131a] p-4 rounded-xl border border-[#2a2a3a] animate-fade-in">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider">Uang Diterima (Rp)</label>
+                  <span className="text-xs text-indigo-400 font-mono">Tagihan: Rp {Number(posAmount).toLocaleString('id-ID')}</span>
+                </div>
+                <input required type="number" value={cashReceived} onChange={e => setCashReceived(e.target.value)} placeholder="Masukkan jumlah uang tunai" className="bg-[#1c1c26] border-[#2a2a3a] text-white w-full px-3 py-2.5 rounded-lg text-sm focus:outline-none focus:border-indigo-500"/>
+                {Number(cashReceived) >= Number(posAmount) && (
+                  <div className="flex justify-between items-center text-xs font-bold text-emerald-400 pt-1">
+                    <span>Uang Kembalian:</span>
+                    <span>Rp {(Number(cashReceived) - Number(posAmount)).toLocaleString('id-ID')}</span>
+                  </div>
+                )}
+              </div>
+            )}
             <button type="submit" disabled={isProcessingPayment} className="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl hover:bg-emerald-500 transition disabled:opacity-50 h-14 flex items-center justify-center">
               {isProcessingPayment ? (
                 <div className="flex flex-col items-center leading-tight">
@@ -807,6 +988,12 @@ export default function App() {
                 ].map(([k,v],i) => (
                   <div key={i} className="flex justify-between items-center"><span className="text-gray-500">{k}</span>{typeof v === 'string' ? <span className="text-gray-300">{v}</span> : v}</div>
                 ))}
+                 {receipt.method.includes('Cash') && receipt.cashReceived !== null && receipt.cashReceived !== undefined && (
+                  <div className="space-y-1.5 pt-2 border-t border-[#2a2a3a]/40 mt-2">
+                    <div className="flex justify-between items-center text-xs"><span className="text-gray-500">Bayar (Cash)</span><span className="text-gray-300">Rp {Number(receipt.cashReceived).toLocaleString('id-ID')}</span></div>
+                    <div className="flex justify-between items-center text-xs"><span className="text-gray-500">Kembalian</span><span className="text-emerald-400 font-semibold">Rp {Number(receipt.cashReturn).toLocaleString('id-ID')}</span></div>
+                  </div>
+                )}
                 <div className="flex justify-between items-center pt-4 border-t border-[#2a2a3a] mt-3">
                   <span className="text-lg font-bold text-white">TOTAL</span>
                   <span className={`text-xl font-extrabold ${receipt.status === 'PENDING' ? 'text-white' : 'text-emerald-400'}`}>Rp {Number(receipt.amount).toLocaleString('id-ID')}</span>
@@ -823,9 +1010,14 @@ export default function App() {
                     ) : '💳 Konfirmasi Pembayaran'}
                   </button>
                 ) : (
-                  <button onClick={handleDownloadReceipt} className="w-full bg-white/5 border border-[#2a2a3a] text-white font-semibold py-3 rounded-xl hover:bg-white/10 transition flex items-center justify-center gap-2 text-sm">
-                    ⬇️ Download Invoice PDF
-                  </button>
+                  <div className="flex gap-2">
+                    <button onClick={handleDownloadReceipt} className="flex-1 bg-white/5 border border-[#2a2a3a] text-white font-semibold py-3 rounded-xl hover:bg-white/10 transition flex items-center justify-center gap-2 text-xs">
+                      ⬇️ PDF Invoice
+                    </button>
+                    <button onClick={handlePrintReceipt} className="flex-1 bg-indigo-600/10 border border-indigo-500/20 text-indigo-400 font-semibold py-3 rounded-xl hover:bg-indigo-500/20 transition flex items-center justify-center gap-2 text-xs">
+                      🖨️ Cetak Struk
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
@@ -839,9 +1031,17 @@ export default function App() {
 
       {/* TRANSACTION HISTORY */}
       <div className="rounded-2xl border border-[#2a2a3a] bg-[#1c1c26] overflow-hidden">
-        <div className="p-4 border-b border-[#2a2a3a] flex items-center justify-between">
+        <div className="p-4 border-b border-[#2a2a3a] flex flex-col sm:flex-row items-center justify-between gap-3">
           <h3 className="text-sm font-bold text-white">Riwayat Transaksi</h3>
-          <span className="text-xs text-gray-500">{transactions.length} transaksi</span>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <input type="text" placeholder="🔍 Cari transaksi..." value={txSearchTerm} onChange={e => setTxSearchTerm(e.target.value)} className="w-full sm:w-48 text-xs py-1.5 px-3 bg-[#13131a] border border-[#2a2a3a] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500"/>
+            <select value={txStatusFilter} onChange={e => setTxStatusFilter(e.target.value)} className="text-xs py-1.5 px-2 bg-[#13131a] border border-[#2a2a3a] rounded-lg text-white focus:outline-none focus:border-indigo-500">
+              <option value="">Semua Status</option>
+              <option value="PAID - SECURE">PAID</option>
+              <option value="PENDING">PENDING</option>
+            </select>
+            <span className="text-xs text-gray-500 font-mono whitespace-nowrap ml-1">{filteredTransactions.length} item</span>
+          </div>
         </div>
         <table className="w-full text-left text-sm">
           <thead>
@@ -851,12 +1051,12 @@ export default function App() {
             </tr>
           </thead>
           <tbody>
-            {transactions.map(tx => (
+            {filteredTransactions.map(tx => (
               <tr key={tx.id} className="border-b border-[#2a2a3a]/50 hover:bg-white/[0.02] transition">
                 <td className="p-3 pl-4 text-gray-400 text-xs">{new Date(tx.transactionDate).toLocaleString('id-ID')}</td>
                 <td className="p-3 font-mono text-gray-500 text-xs">{tx.receiptNumber}</td>
                 <td className="p-3 font-semibold text-white text-sm">{tx.vendor.namaPerusahaan}</td>
-                <td className="p-3 text-gray-400">{tx.paymentMethod}</td>
+                <td className="p-3 text-gray-400 text-xs">{tx.paymentMethod}</td>
                 <td className="p-3 font-semibold text-emerald-400">Rp {Number(tx.amount).toLocaleString('id-ID')}</td>
                 <td className="p-3"><span className={`text-[10px] font-bold px-2 py-1 rounded-lg ${tx.status === 'PENDING' ? 'bg-yellow-500/10 text-yellow-400' : 'bg-emerald-500/10 text-emerald-400'}`}>{tx.status}</span></td>
                 {userRole === 'ADMIN' && (
@@ -869,7 +1069,7 @@ export default function App() {
                 )}
               </tr>
             ))}
-            {transactions.length === 0 && (
+            {filteredTransactions.length === 0 && (
               <tr><td colSpan={userRole === 'ADMIN' ? 7 : 6} className="p-10 text-center text-gray-600 text-sm">Belum ada riwayat transaksi.</td></tr>
             )}
           </tbody>
@@ -1012,6 +1212,119 @@ export default function App() {
       )}
       <EditModal isOpen={editModalOpen} vendor={selectedVendor} onClose={() => setEditModalOpen(false)} onSave={handleUpdateVendor} isLoading={isModalLoading}/>
       <DeleteModal isOpen={deleteModalOpen} vendor={selectedVendor} onClose={() => setDeleteModalOpen(false)} onConfirm={handleDeleteVendor} isLoading={isModalLoading}/>
+
+      {isGatewayOpen && gatewayTx && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-md bg-[#13131a] border border-[#2a2a3a] rounded-3xl overflow-hidden shadow-2xl animate-scale-in">
+            {/* Header */}
+            <div className="bg-[#1c1c26] px-6 py-4 border-b border-[#2a2a3a] flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">🔐</span>
+                <div>
+                  <h3 className="text-sm font-extrabold text-white tracking-wider">SECURE PAYMENT GATEWAY</h3>
+                  <p className="text-[10px] text-gray-500 font-mono">SANDBOX SIMULATOR</p>
+                </div>
+              </div>
+              <span className="text-[10px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-0.5 rounded-full uppercase">
+                {gatewayTx.method}
+              </span>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-6">
+              {/* Amount Display */}
+              <div className="text-center bg-[#1c1c26] p-5 rounded-2xl border border-[#2a2a3a]">
+                <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">TOTAL TAGIHAN</p>
+                <h2 className="text-2xl font-extrabold text-indigo-400 mt-1">
+                  Rp {Number(gatewayTx.amount).toLocaleString('id-ID')}
+                </h2>
+                <div className="flex justify-between items-center text-xs text-gray-400 pt-3 border-t border-[#2a2a3a]/40 mt-3">
+                  <span>Merchant:</span>
+                  <span className="font-semibold text-white">Vendor POS Corp</span>
+                </div>
+                <div className="flex justify-between items-center text-xs text-gray-400 pt-1">
+                  <span>No. Invoice:</span>
+                  <span className="font-mono text-white text-[10px]">{gatewayTx.transactionId}</span>
+                </div>
+                <div className="flex justify-between items-center text-xs text-gray-400 pt-1">
+                  <span>Tujuan:</span>
+                  <span className="font-semibold text-white">{gatewayTx.vendor}</span>
+                </div>
+              </div>
+
+              {/* Instructions / Visual Card / QR Mockup */}
+              {gatewayTx.method.includes('Card') ? (
+                <div className="bg-gradient-to-br from-indigo-600 to-indigo-900 p-5 rounded-2xl text-white shadow-lg space-y-4 relative overflow-hidden">
+                  <div className="absolute right-[-20px] bottom-[-20px] text-white/5 text-9xl font-extrabold select-none">VISA</div>
+                  <div className="flex justify-between items-start">
+                    <span className="text-sm font-bold tracking-wider">ELECTRONIC BILLER CARD</span>
+                    <span className="text-xs italic font-bold">debit/credit</span>
+                  </div>
+                  <div className="pt-2">
+                    <p className="text-xs text-indigo-200 uppercase tracking-widest font-medium">Card Number</p>
+                    <p className="text-lg font-mono tracking-widest">•••• •••• •••• 4890</p>
+                  </div>
+                  <div className="flex justify-between items-center text-xs pt-1">
+                    <div>
+                      <p className="text-[10px] text-indigo-200 uppercase">Expiry</p>
+                      <p className="font-mono">12 / 28</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-indigo-200 uppercase">CVC</p>
+                      <p className="font-mono">***</p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-white p-5 rounded-2xl flex flex-col items-center justify-center border border-gray-200 space-y-3 relative overflow-hidden">
+                  <div className="absolute top-2 left-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">SCAN QRIS</div>
+                  {/* Generated QR Mockup */}
+                  <div className="w-40 h-40 bg-gray-100 flex items-center justify-center rounded-xl border border-gray-200 relative">
+                    <div className="absolute inset-2 border-2 border-dashed border-gray-400 rounded-lg flex items-center justify-center">
+                      <div className="text-4xl">📱</div>
+                    </div>
+                    {/* Corner decorators */}
+                    <div className="absolute top-1 left-1 w-4 h-4 border-t-4 border-l-4 border-indigo-600"></div>
+                    <div className="absolute top-1 right-1 w-4 h-4 border-t-4 border-r-4 border-indigo-600"></div>
+                    <div className="absolute bottom-1 left-1 w-4 h-4 border-b-4 border-l-4 border-indigo-600"></div>
+                    <div className="absolute bottom-1 right-1 w-4 h-4 border-b-4 border-r-4 border-indigo-600"></div>
+                  </div>
+                  <p className="text-[10px] font-bold text-indigo-600 tracking-widest text-center uppercase">
+                    PROSES AUTO-CONFIRM SETELAH SCAN
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="bg-[#1c1c26] px-6 py-4 border-t border-[#2a2a3a] flex flex-col gap-2">
+              <button
+                onClick={handleSimulatePaymentSuccess}
+                disabled={isSimulatingPayment}
+                className="w-full bg-emerald-600 text-white text-xs font-bold py-3.5 rounded-xl hover:bg-emerald-500 transition disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isSimulatingPayment ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    Memverifikasi Transaksi...
+                  </>
+                ) : '✓ Simulasi Pembayaran Sukses'}
+              </button>
+              <button
+                onClick={() => {
+                  setIsGatewayOpen(false);
+                  setGatewayTx(null);
+                  alert("Simulasi pembayaran dibatalkan.");
+                }}
+                disabled={isSimulatingPayment}
+                className="w-full bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white text-xs font-semibold py-3 rounded-xl border border-[#2a2a3a] transition"
+              >
+                Batal / Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
