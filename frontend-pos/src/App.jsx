@@ -240,10 +240,10 @@ export default function App() {
     const doc = new jsPDF()
     
     doc.setFontSize(20)
-    doc.text("KONTRAK PENGADAAN B2B", 105, 20, null, null, "center")
+    doc.text("KONTRAK KERJASAMA VENDOR", 105, 20, null, null, "center")
     
     doc.setFontSize(12)
-    doc.text(`Nomor: KTR-${new Date().getFullYear()}/PRC-${selectedV.id}/001`, 20, 35)
+    doc.text(`Nomor: KTR-${new Date().getFullYear()}/VNDR-${selectedV.id}/001`, 20, 35)
     doc.text(`Tanggal: ${new Date().toLocaleDateString()}`, 20, 42)
 
     doc.text("Pada hari ini, telah disepakati perjanjian pengadaan barang/jasa antara Perusahaan (Pihak Pertama)", 20, 55)
@@ -266,7 +266,7 @@ export default function App() {
     doc.text("UU Informasi dan Transaksi Elektronik.", 20, 167)
 
     doc.text("Pihak Pertama,", 40, 200)
-    doc.text("( Direktur Procurement )", 40, 230)
+    doc.text("( Direktur Utama )", 40, 230)
 
     doc.text("Pihak Kedua,", 140, 200)
     doc.text(`( ${selectedV.namaPerusahaan} )`, 140, 230)
@@ -286,7 +286,7 @@ export default function App() {
       
       {/* Navbar (Landing) */}
       <nav className="relative z-10 max-w-7xl mx-auto p-6 flex justify-between items-center">
-        <div className="font-black text-xl tracking-widest">B2B<span className="text-indigo-500">PROCURE</span></div>
+        <div className="font-black text-xl tracking-widest">VENDOR<span className="text-indigo-500">POS</span></div>
         <button onClick={() => navigate('/login')} className="px-5 py-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 transition-colors text-sm font-bold">
           Login Portal
         </button>
@@ -301,7 +301,7 @@ export default function App() {
           </div>
           
           <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tight bg-clip-text text-transparent bg-gradient-to-br from-white via-gray-200 to-gray-500 animate-fade-in" style={{animationDelay: '100ms'}}>
-            Secure B2B Procurement <br/> & Billing System
+            Secure Vendor Management <br/> & POS Gateway
           </h1>
           
           <p className="text-lg md:text-xl text-gray-400 mb-12 font-medium max-w-3xl mx-auto animate-fade-in" style={{animationDelay: '200ms'}}>
@@ -337,7 +337,7 @@ export default function App() {
         <div id="features" className="mb-24">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-black mb-4">Informasi Sistem</h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">Tiga pilar utama yang membangun arsitektur B2B Procurement System ini.</p>
+            <p className="text-gray-400 max-w-2xl mx-auto">Tiga pilar utama yang membangun arsitektur Vendor POS System ini.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
@@ -359,7 +359,7 @@ export default function App() {
               <div className="w-14 h-14 rounded-2xl bg-blue-500/20 flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform">📄</div>
               <h3 className="text-2xl font-bold mb-4">Otomatisasi Kontrak Legal</h3>
               <p className="text-gray-400 leading-relaxed">
-                Sistem mampu mengekstrak data supplier secara dinamis dan men-generate <strong>Dokumen PDF Kontrak Pengadaan B2B</strong> secara otomatis sesuai dengan standar hukum yang berlaku.
+                Sistem mampu mengekstrak data vendor secara dinamis dan men-generate <strong>Dokumen PDF Kontrak Kerjasama</strong> secara otomatis sesuai dengan standar hukum yang berlaku.
               </p>
             </div>
           </div>
@@ -367,7 +367,7 @@ export default function App() {
 
         {/* Footer */}
         <footer className="text-center border-t border-white/10 pt-8 text-gray-500 text-sm">
-          <p>© {new Date().getFullYear()} B2B Procurement System. Project Tugas Besar Transaksi Elektronik.</p>
+          <p>© {new Date().getFullYear()} Vendor POS System. Project Tugas Besar Transaksi Elektronik.</p>
           <p className="mt-1">Dikembangkan menggunakan Spring Boot (Backend) dan React.js (Frontend).</p>
         </footer>
       </main>
@@ -392,7 +392,7 @@ export default function App() {
             <span className="text-3xl">🛡️</span>
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 mb-2">
-            PROCUREMENT GATEWAY
+            VENDOR GATEWAY
           </h1>
           <p className="text-gray-400 text-sm font-medium tracking-wide">
             Corporate Authentication System
@@ -640,8 +640,8 @@ export default function App() {
         <nav className="bg-black text-white p-4 shadow-lg sticky top-0 z-10">
           <div className="max-w-7xl mx-auto flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-black">B2B PROCUREMENT</h1>
-              <p className="text-xs text-gray-400 tracking-widest">ENTERPRISE BILLING & POS</p>
+              <h1 className="text-2xl font-black">VENDOR POS</h1>
+              <p className="text-xs text-gray-400 tracking-widest">SISTEM TRANSAKSI ELEKTRONIK</p>
             </div>
             <div className="flex gap-4 items-center">
               <span className="text-sm font-bold text-gray-400 mr-4 hidden md:block">Halo, {userRole === 'ADMIN' ? 'Admin' : 'User'}</span>

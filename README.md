@@ -1,4 +1,4 @@
-# B2B Procurement & Billing System 🏢💳
+# Vendor POS & Management System 🏢💳
 
 **Tugas Besar - Mata Kuliah Transaksi Elektronik**  
 Dikembangkan oleh: **Alsani & Aditya Luthfi**
