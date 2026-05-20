@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional; // <-- INI IMPORT BARUNYA
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,6 +31,7 @@ import com.tubes.vendorpos.repository.UserRepository;
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+@Transactional // <-- INI SEGELNYA BIAR GAK ERROR PAS HAPUS TOKEN
 public class AuthController {
 
     private static final String REFRESH_TOKEN_COOKIE = "refreshToken";
