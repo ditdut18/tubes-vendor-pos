@@ -43,11 +43,12 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/auth/**", "/error").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/vendors/**").hasAnyRole("USER", "ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/vendors/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/vendors/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/vendors/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/transactions/midtrans-webhook").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/transactions/pay").hasAnyRole("USER", "ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/transactions/confirm/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/transactions/**").hasRole("ADMIN")

@@ -42,6 +42,9 @@ public class Vendor {
     @Column(nullable = false)
     private String statusKerjasama;
 
+    @Column(name = "default_price")
+    private Double defaultPrice = 500000.0;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     @JsonProperty("createdAt")
     private LocalDateTime createdAt;
@@ -78,6 +81,9 @@ public class Vendor {
 
     public String getStatusKerjasama() { return statusKerjasama; }
     public void setStatusKerjasama(String statusKerjasama) { this.statusKerjasama = statusKerjasama; }
+
+    public Double getDefaultPrice() { return defaultPrice; }
+    public void setDefaultPrice(Double defaultPrice) { this.defaultPrice = defaultPrice; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
