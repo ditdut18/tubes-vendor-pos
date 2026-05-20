@@ -1,10 +1,11 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { Routes, Route, Navigate, useNavigate, Link, useLocation } from 'react-router-dom'
 import axios from 'axios'
 import { jsPDF } from 'jspdf'
 import { EditModal, DeleteModal } from './components/Modals'
 import { API_CONFIG, getStatusColor, VENDOR_STATUS_OPTIONS } from './config'
 
+axios.defaults.withCredentials = true
 const BACKEND_URL = `${API_CONFIG.BACKEND_URL}/vendors`
 
 export default function App() {
@@ -14,12 +15,102 @@ export default function App() {
   // ----------------------------------------------------
   // 1. SECURE BY DESIGN (Login & Auth State)
   // ----------------------------------------------------
-  const [isAuthenticated, setIsAuthenticated] = useState(() => localStorage.getItem('isAuth') === 'true')
+  const [authToken, setAuthToken] = useState(() => localStorage.getItem('authToken') || '')
+  const [isAuthenticated, setIsAuthenticated] = useState(() => !!localStorage.getItem('authToken'))
   const [userRole, setUserRole] = useState(() => localStorage.getItem('userRole') || '') // 'ADMIN' or 'USER'
   const [authData, setAuthData] = useState({ username: '', password: '' })
   const [authError, setAuthError] = useState('')
   const [isAuthLoading, setIsAuthLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const isRefreshingRef = useRef(false)
+  const failedQueueRef = useRef([])
+
+  useEffect(() => {
+    if (authToken) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${authToken}`
+    } else {
+      delete axios.defaults.headers.common['Authorization']
+    }
+  }, [authToken])
+
+  const handleLogout = useCallback(() => {
+    setIsAuthenticated(false)
+    setUserRole('')
+    setAuthToken('')
+    localStorage.removeItem('authToken')
+    localStorage.removeItem('userRole')
+    navigate('/')
+  }, [navigate])
+
+  const processQueue = (error, token = null) => {
+    failedQueueRef.current.forEach(prom => {
+      if (error) {
+        prom.reject(error)
+      } else {
+        prom.resolve(token)
+      }
+    })
+    failedQueueRef.current = []
+  }
+
+  const refreshAccessToken = useCallback(async () => {
+    try {
+      const response = await axios.post(`${API_CONFIG.BACKEND_URL}/auth/refresh`)
+      const token = response.data.token || ''
+      if (token) {
+        setAuthToken(token)
+        localStorage.setItem('authToken', token)
+      }
+      return token
+    } catch (refreshError) {
+      handleLogout()
+      throw refreshError
+    }
+  }, [handleLogout])
+
+  useEffect(() => {
+    const responseInterceptor = axios.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        const originalRequest = error.config
+        if (originalRequest?.url?.includes('/auth/refresh') || originalRequest?.url?.includes('/auth/login')) {
+          return Promise.reject(error)
+        }
+
+        if (error.response?.status === 401 && !originalRequest._retry) {
+          if (isRefreshingRef.current) {
+            return new Promise((resolve, reject) => {
+              failedQueueRef.current.push({ resolve, reject })
+            }).then((token) => {
+              originalRequest.headers['Authorization'] = `Bearer ${token}`
+              return axios(originalRequest)
+            })
+          }
+
+          originalRequest._retry = true
+          isRefreshingRef.current = true
+
+          return new Promise(async (resolve, reject) => {
+            try {
+              const newToken = await refreshAccessToken()
+              processQueue(null, newToken)
+              originalRequest.headers['Authorization'] = `Bearer ${newToken}`
+              resolve(await axios(originalRequest))
+            } catch (refreshError) {
+              processQueue(refreshError, null)
+              reject(refreshError)
+            } finally {
+              isRefreshingRef.current = false
+            }
+          })
+        }
+
+        return Promise.reject(error)
+      }
+    )
+
+    return () => axios.interceptors.response.eject(responseInterceptor)
+  }, [refreshAccessToken])
 
   const handleAuth = async (e) => {
     e.preventDefault()
@@ -35,10 +126,12 @@ export default function App() {
     try {
       const response = await axios.post(`${API_CONFIG.BACKEND_URL}/auth/login`, authData)
       if (response.status === 200) {
-        const role = response.data.role || 'USER'
+        const role = (response.data.role || 'USER').toUpperCase()
+        const token = response.data.token || ''
         setIsAuthenticated(true)
         setUserRole(role)
-        localStorage.setItem('isAuth', 'true')
+        setAuthToken(token)
+        localStorage.setItem('authToken', token)
         localStorage.setItem('userRole', role)
         navigate('/dashboard')
       }
@@ -47,14 +140,6 @@ export default function App() {
     } finally {
       setIsAuthLoading(false)
     }
-  }
-
-  const handleLogout = () => {
-    setIsAuthenticated(false)
-    setUserRole('')
-    localStorage.removeItem('isAuth')
-    localStorage.removeItem('userRole')
-    navigate('/')
   }
 
   // ----------------------------------------------------
@@ -71,7 +156,7 @@ export default function App() {
   const [totalElements, setTotalElements] = useState(0)
   
   const [formData, setFormData] = useState({
-    namaPerusahaan: '', alamat: '', kontak: '', statusKerjasama: ''
+    namaPerusahaan: '', alamat: '', kontak: '', statusKerjasama: '', defaultPrice: ''
   })
   const [formErrors, setFormErrors] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -96,20 +181,23 @@ export default function App() {
   const [receipt, setReceipt] = useState(null)
   const [transactions, setTransactions] = useState([])
   const [cashReceived, setCashReceived] = useState('')
+  const [txSearchTerm, setTxSearchTerm] = useState('')
+  const [txStatusFilter, setTxStatusFilter] = useState('')
   const [paymentSubOption, setPaymentSubOption] = useState('')
   const [isGatewayOpen, setIsGatewayOpen] = useState(false)
   const [gatewayTx, setGatewayTx] = useState(null)
   const [isSimulatingPayment, setIsSimulatingPayment] = useState(false)
-  const [txSearchTerm, setTxSearchTerm] = useState('')
-  const [txStatusFilter, setTxStatusFilter] = useState('')
+  const [activeInfoTab, setActiveInfoTab] = useState('system')
 
   const handleVendorChange = (vendorId) => {
     setPosSelectedVendor(vendorId)
     if (vendorId) {
-      const baseAmounts = [500000, 750000, 1200000, 1500000, 2000000, 2500000, 3000000, 4500000]
-      const idNum = parseInt(vendorId, 10) || 0
-      const fixedAmount = baseAmounts[idNum % baseAmounts.length]
-      setPosAmount(fixedAmount.toString())
+      const selectedV = vendors.find(v => v.id.toString() === vendorId)
+      if (selectedV && selectedV.defaultPrice !== undefined && selectedV.defaultPrice !== null) {
+        setPosAmount(selectedV.defaultPrice.toString())
+      } else {
+        setPosAmount('500000')
+      }
     } else {
       setPosAmount('')
     }
@@ -176,9 +264,13 @@ export default function App() {
     if (!validateForm()) return
     setIsSubmitting(true)
     try {
-      await axios.post(BACKEND_URL, formData, { timeout: API_CONFIG.TIMEOUT })
+      const payload = {
+        ...formData,
+        defaultPrice: formData.defaultPrice ? Number(formData.defaultPrice) : 500000
+      }
+      await axios.post(BACKEND_URL, payload, { timeout: API_CONFIG.TIMEOUT })
       setSuccessMessage(`Vendor berhasil ditambahkan!`)
-      setFormData({ namaPerusahaan: '', alamat: '', kontak: '', statusKerjasama: '' })
+      setFormData({ namaPerusahaan: '', alamat: '', kontak: '', statusKerjasama: '', defaultPrice: '' })
       setCurrentPage(0)
       setTimeout(() => setSuccessMessage(null), 4000)
       await fetchVendors()
@@ -282,8 +374,32 @@ export default function App() {
       setReceipt(newReceipt)
       
       if (paymentMethod === 'Card' || paymentMethod === 'E-Wallet') {
-        setGatewayTx(newReceipt)
-        setIsGatewayOpen(true)
+        if (tx.snapToken && window.snap) {
+          window.snap.pay(tx.snapToken, {
+            onSuccess: async function(result) {
+              console.log("Midtrans payment success:", result);
+              alert("Pembayaran berhasil diselesaikan!");
+              await checkTransactionStatus(tx.id);
+            },
+            onPending: async function(result) {
+              console.log("Midtrans payment pending:", result);
+              alert("Pembayaran tertunda. Silakan selesaikan pembayaran Anda.");
+              await checkTransactionStatus(tx.id);
+            },
+            onError: async function(result) {
+              console.error("Midtrans payment error:", result);
+              alert("Pembayaran gagal!");
+              await checkTransactionStatus(tx.id);
+            },
+            onClose: async function() {
+              console.log("Midtrans payment popup closed");
+              await checkTransactionStatus(tx.id);
+            }
+          });
+        } else {
+          setGatewayTx(newReceipt)
+          setIsGatewayOpen(true)
+        }
       }
 
       setPosSelectedVendor('')
@@ -330,6 +446,23 @@ export default function App() {
     }
   }
 
+  const checkTransactionStatus = async (txId) => {
+    try {
+      const response = await axios.get(`${API_CONFIG.BACKEND_URL}/transactions/${txId}/status`)
+      const tx = response.data
+      setReceipt(prev => {
+        if (prev && prev.id === tx.id) {
+          return { ...prev, status: tx.status }
+        }
+        return prev
+      })
+      fetchTransactions()
+      alert(`[Verifikasi Pembayaran]\nNo. Struk: ${tx.receiptNumber}\nStatus Terbaru: ${tx.status}`)
+    } catch (err) {
+      console.error("Gagal memverifikasi status pembayaran:", err)
+      alert("Gagal memverifikasi status pembayaran.")
+    }
+  }
   const handleSimulatePaymentSuccess = async () => {
     if (!gatewayTx) return
     setIsSimulatingPayment(true)
@@ -356,7 +489,7 @@ export default function App() {
     if (!receipt) return;
     
     let cashDetailsHtml = '';
-    if (receipt.method.includes('Cash') && receipt.cashReceived) {
+    if (receipt.method === 'Cash' && receipt.cashReceived) {
       cashDetailsHtml = `
         <div class="flex"><span>Bayar:</span><span>Rp ${Number(receipt.cashReceived).toLocaleString('id-ID')}</span></div>
         <div class="flex"><span>Kembali:</span><span>Rp ${Number(receipt.cashReturn).toLocaleString('id-ID')}</span></div>
@@ -382,13 +515,13 @@ export default function App() {
             <p style="margin:2px 0;">Official Receipt</p>
           </div>
           <div class="divider"></div>
-          <div class="flex"><span>ID:</span><span>\${receipt.transactionId}</span></div>
-          <div class="flex"><span>Tanggal:</span><span>\${receipt.date}</span></div>
-          <div class="flex"><span>Vendor:</span><span>\${receipt.vendor}</span></div>
-          <div class="flex"><span>Metode:</span><span>\${receipt.method}</span></div>
+          <div class="flex"><span>ID:</span><span>${receipt.transactionId}</span></div>
+          <div class="flex"><span>Tanggal:</span><span>${receipt.date}</span></div>
+          <div class="flex"><span>Vendor:</span><span>${receipt.vendor}</span></div>
+          <div class="flex"><span>Metode:</span><span>${receipt.method}</span></div>
           <div class="divider"></div>
-          <div class="flex bold"><span>TOTAL:</span><span>Rp \${Number(receipt.amount).toLocaleString('id-ID')}</span></div>
-          \${cashDetailsHtml}
+          <div class="flex bold"><span>TOTAL:</span><span>Rp ${Number(receipt.amount).toLocaleString('id-ID')}</span></div>
+          ${cashDetailsHtml}
           <div class="divider"></div>
           <div class="text-center" style="margin-top:20px;">
             <p style="margin:0;">Terima Kasih</p>
@@ -437,7 +570,7 @@ export default function App() {
     doc.setFontSize(10)
     doc.text("Status       : SUCCESS (SECURED)", 20, 115)
 
-    if (receipt.method.includes('Cash') && receipt.cashReceived !== null && receipt.cashReceived !== undefined) {
+    if (receipt.method === 'Cash' && receipt.cashReceived !== null && receipt.cashReceived !== undefined) {
       doc.text(`Bayar (Cash) : Rp ${Number(receipt.cashReceived).toLocaleString('id-ID')}`, 20, 122)
       doc.text(`Kembalian    : Rp ${Number(receipt.cashReturn).toLocaleString('id-ID')}`, 20, 129)
     }
@@ -617,6 +750,176 @@ export default function App() {
           ) : (
             <div className="text-center py-8 text-gray-600 text-sm">Belum ada transaksi.</div>
           )}
+        </div>
+      </div>
+
+      {/* Web App Information Panel (Complex Control Center) */}
+      <div className="rounded-2xl border border-indigo-500/20 bg-[#1c1c26] p-6 relative overflow-hidden bg-gradient-to-br from-[#1c1c26] to-[#202030] animate-fade-in mt-6 shadow-2xl">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-600/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
+        
+        <div className="relative z-10 space-y-6">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#2a2a3a] pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-xl">🛡️</div>
+              <div>
+                <h3 className="text-base font-extrabold text-white tracking-wide uppercase">Control Center & Sistem Transaksi</h3>
+                <p className="text-xs text-gray-500 mt-0.5">Pusat dokumentasi arsitektur dan monitoring API terpadu</p>
+              </div>
+            </div>
+
+            {/* Tab Toggles */}
+            <div className="flex bg-[#13131a] p-1 rounded-xl border border-[#2a2a3a] self-start sm:self-center">
+              {[
+                { id: 'system', label: '⚙️ Health Check', desc: 'Status API & Database' },
+                { id: 'flow', label: '🔄 Alur Kerja', desc: 'Siklus hidup transaksi' },
+                { id: 'security', label: '🔒 Keamanan', desc: 'Protokol & Otentikasi' }
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveInfoTab(tab.id)}
+                  className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                    activeInfoTab === tab.id
+                      ? 'bg-indigo-600 text-white shadow-lg'
+                      : 'text-gray-400 hover:text-white hover:bg-white/[0.02]'
+                  }`}
+                >
+                  {tab.label.split(' ')[0]} <span className="hidden md:inline">{tab.label.split(' ')[1]}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* TAB 1: SYSTEM & HEALTH MONITOR */}
+          {activeInfoTab === 'system' && (
+            <div className="space-y-6 animate-fade-in">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[
+                  { name: 'Spring Boot REST API', status: 'Active', host: (() => { try { return new URL(API_CONFIG.BACKEND_URL).host } catch(e) { return 'localhost:8081' } })(), pin: 'bg-emerald-500' },
+                  { name: 'React POS Client', status: 'Online', host: 'localhost:5173', pin: 'bg-emerald-500' },
+                  { name: 'MySQL Database Server', status: 'Connected', host: 'db_transaksi_vendor', pin: 'bg-emerald-500' },
+                  { name: 'Mock Webhook Service', status: 'Ready', host: 'secure_gateway_listener', pin: 'bg-emerald-500' }
+                ].map((s, idx) => (
+                  <div key={idx} className="bg-[#13131a]/80 border border-[#2a2a3a] p-4 rounded-xl flex items-center justify-between">
+                    <div>
+                      <h4 className="text-xs font-bold text-white mb-0.5">{s.name}</h4>
+                      <p className="text-[10px] text-gray-500 font-mono">{s.host}</p>
+                    </div>
+                    <span className="flex items-center gap-1.5 text-xs text-gray-400 font-semibold bg-white/5 px-2.5 py-1 rounded-lg">
+                      <span className={`w-2 h-2 rounded-full ${s.pin} animate-pulse`}></span> {s.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="bg-[#13131a]/40 border border-[#2a2a3a] rounded-xl overflow-hidden">
+                <div className="p-4 bg-[#13131a] border-b border-[#2a2a3a] flex items-center justify-between">
+                  <span className="text-xs font-bold text-white uppercase tracking-wider">Spesifikasi Teknologi Platform</span>
+                  <span className="text-[10px] text-indigo-400 font-mono uppercase font-semibold">Tubes Transaksi Elektronik</span>
+                </div>
+                <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-gray-400 leading-relaxed">
+                  <div>
+                    <h5 className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-2">💻 Frontend Architecture</h5>
+                    <ul className="space-y-1 text-xs">
+                      <li>• React JS 18 (Client Component Model)</li>
+                      <li>• Tailwind CSS v3 (Modern Dark Glassmorphism)</li>
+                      <li>• Axios Client (Asynchronous HTTP)</li>
+                      <li>• jsPDF Auto-Generator (Dokumen Kontrak)</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-2">⚙️ Backend Service</h5>
+                    <ul className="space-y-1 text-xs">
+                      <li>• Spring Boot 3.x RESTful Web Services</li>
+                      <li>• Spring Data JPA & Hibernate Engine</li>
+                      <li>• Hibernate DDL Auto Schema Migration</li>
+                      <li>• Maven Build System</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-2">🛡️ Keamanan & Integrasi</h5>
+                    <ul className="space-y-1 text-xs">
+                      <li>• RBAC (Role-Based Access Control)</li>
+                      <li>• Mock API Payment Gateway (Midtrans Snap Mock)</li>
+                      <li>• Webhook Simulation Event-Driven callback</li>
+                      <li>• MySQL Relational DB Storage</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2: TRANSACTION WORKFLOW TIMELINE */}
+          {activeInfoTab === 'flow' && (
+            <div className="space-y-6 animate-fade-in">
+              <p className="text-gray-400 text-xs leading-relaxed">
+                Platform ini mengotomatiskan siklus penagihan vendor dari pemesanan kasir hingga rekonsiliasi database melalui tahapan aman berikut:
+              </p>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 relative">
+                {[
+                  { step: '01', title: 'Inisialisasi POS', desc: 'Kasir memilih vendor. Nominal default di-load otomatis dari database (dapat dimodifikasi).', icon: '📝' },
+                  { step: '02', title: 'Simpan PENDING', desc: 'Invoice dikirim ke backend dan didaftarkan ke MySQL database dengan status PENDING.', icon: '💾' },
+                  { step: '03', title: 'Trigger Gateway', desc: 'Jika non-cash, modal Simulator Payment Gateway (Midtrans Snap) muncul untuk meminta pembayaran.', icon: '📱' },
+                  { step: '04', title: 'Webhook Callback', desc: 'Ketika simulator sukses, API /confirm/{id} dipanggil layaknya webhook dari gateway asli.', icon: '🔗' },
+                  { step: '05', title: 'Settlement & PDF', desc: 'Status transaksi berubah menjadi PAID - SECURE, balance terupdate, dan invoice siap dicetak.', icon: '✅' }
+                ].map((s, idx) => (
+                  <div key={idx} className="bg-[#13131a]/60 border border-[#2a2a3a] p-4 rounded-xl flex flex-col justify-between relative group hover:border-indigo-500/30 transition-all">
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-indigo-400 font-mono font-bold text-sm tracking-wider">STAGE {s.step}</span>
+                        <span className="text-lg">{s.icon}</span>
+                      </div>
+                      <h4 className="text-xs font-bold text-white mb-1.5">{s.title}</h4>
+                      <p className="text-[11px] text-gray-500 leading-normal">{s.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: SECURITY PROTOCOLS */}
+          {activeInfoTab === 'security' && (
+            <div className="space-y-4 animate-fade-in">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-[#13131a]/60 border border-[#2a2a3a] p-5 rounded-xl space-y-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">👑</span>
+                    <h4 className="text-xs font-extrabold text-white uppercase tracking-wider">Role-Based Access Control (RBAC)</h4>
+                  </div>
+                  <p className="text-xs text-gray-500 leading-relaxed">
+                    Sistem memisahkan otorisasi dengan ketat berdasarkan hak akses pengguna:
+                  </p>
+                  <ul className="text-xs text-gray-400 space-y-1.5 pl-2">
+                    <li>• <strong className="text-amber-400">ADMIN</strong>: Memiliki hak penuh untuk mengelola (CRUD) mitra vendor, mengubah harga default vendor, menyetujui transaksi secara manual, serta meng-generate kontrak kerja sama legal.</li>
+                    <li>• <strong className="text-sky-400">USER (Staff Kasir)</strong>: Hanya diizinkan mengakses menu kasir POS, mengentri pembayaran, dan melihat riwayat billing yang berstatus PENDING.</li>
+                  </ul>
+                </div>
+
+                <div className="bg-[#13131a]/60 border border-[#2a2a3a] p-5 rounded-xl space-y-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">🔒</span>
+                    <h4 className="text-xs font-extrabold text-white uppercase tracking-wider">Integritas API & Penomoran Invoice</h4>
+                  </div>
+                  <p className="text-xs text-gray-500 leading-relaxed">
+                    Untuk mencegah manipulasi data keuangan di database, sistem menggunakan:
+                  </p>
+                  <ul className="text-xs text-gray-400 space-y-1.5 pl-2">
+                    <li>• <strong>Sequential Auto-Confirm Block</strong>: API konfirmasi `/confirm/{id}` dilindungi dan memicu pembaruan state aman yang melarang otorisasi konutng ganda pada transaksi yang sama.</li>
+                    <li>• <strong>Deterministic Receipt Numbering</strong>: Nomor struk kasir otomatis ter-generate secara teratur dengan penggabungan kode waktu dan nomor acak terenkripsi untuk mencegah tabrakan data (data collision).</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Footer Info */}
+          <div className="pt-4 border-t border-[#2a2a3a] flex flex-wrap items-center justify-between gap-2 text-xs text-gray-500">
+            <span>Mata Kuliah: <strong>Transaksi Elektronik</strong> - Semester 4</span>
+            <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Database MySQL Server (Connected & Synchronized)</span>
+          </div>
         </div>
       </div>
     </div>
@@ -823,7 +1126,8 @@ export default function App() {
             <input type="text" name="namaPerusahaan" value={formData.namaPerusahaan} onChange={handleChange} placeholder="Nama Perusahaan"/>
             <input type="text" name="alamat" value={formData.alamat} onChange={handleChange} placeholder="Alamat"/>
             <input type="text" name="kontak" value={formData.kontak} onChange={handleChange} placeholder="Kontak (No HP/Telp)"/>
-            <select name="statusKerjasama" value={formData.statusKerjasama} onChange={handleChange}>
+            <input type="number" name="defaultPrice" value={formData.defaultPrice} onChange={handleChange} placeholder="Harga Default POS (Rp) - Default: 500.000"/>
+            <select name="statusKerjasama" value={formData.statusKerjasama} onChange={handleChange} className="md:col-span-2">
               <option value="">Pilih Status...</option>
               {VENDOR_STATUS_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
             </select>
@@ -891,8 +1195,11 @@ export default function App() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Nominal (Rp)</label>
-              <input required type="number" value={posAmount} onChange={e => setPosAmount(e.target.value)} placeholder="500000"/>
+              <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                <span>Nominal (Rp)</span>
+                <span className="text-[10px] text-indigo-400 normal-case font-bold animate-pulse">✨ Terisi Otomatis (Dapat Diedit)</span>
+              </label>
+              <input required type="number" value={posAmount} onChange={e => setPosAmount(e.target.value)} placeholder="Masukkan nominal atau pilih vendor" className="bg-[#13131a] border-[#2a2a3a] text-white focus:border-indigo-500 transition-all"/>
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Metode Pembayaran</label>
@@ -988,9 +1295,9 @@ export default function App() {
                 ].map(([k,v],i) => (
                   <div key={i} className="flex justify-between items-center"><span className="text-gray-500">{k}</span>{typeof v === 'string' ? <span className="text-gray-300">{v}</span> : v}</div>
                 ))}
-                 {receipt.method.includes('Cash') && receipt.cashReceived !== null && receipt.cashReceived !== undefined && (
+                {receipt.method === 'Cash' && receipt.cashReceived !== null && receipt.cashReceived !== undefined && (
                   <div className="space-y-1.5 pt-2 border-t border-[#2a2a3a]/40 mt-2">
-                    <div className="flex justify-between items-center text-xs"><span className="text-gray-500">Bayar (Cash)</span><span className="text-gray-300">Rp {Number(receipt.cashReceived).toLocaleString('id-ID')}</span></div>
+                    <div className="flex justify-between items-center text-xs"><span className="text-gray-500">Uang Tunai</span><span className="text-gray-300">Rp {Number(receipt.cashReceived).toLocaleString('id-ID')}</span></div>
                     <div className="flex justify-between items-center text-xs"><span className="text-gray-500">Kembalian</span><span className="text-emerald-400 font-semibold">Rp {Number(receipt.cashReturn).toLocaleString('id-ID')}</span></div>
                   </div>
                 )}
@@ -1001,14 +1308,20 @@ export default function App() {
               </div>
               <div className="mt-6 flex flex-col gap-2">
                 {receipt.status === 'PENDING' ? (
-                  <button onClick={handleConfirmPayment} disabled={isConfirmingPayment} className="w-full bg-indigo-600 text-white font-bold py-3.5 rounded-xl hover:bg-indigo-500 transition disabled:opacity-50 h-14 flex items-center justify-center">
-                    {isConfirmingPayment ? (
-                      <div className="flex flex-col items-center leading-tight">
-                        <svg className="animate-spin h-5 w-5 text-white mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                        <span className="text-[10px] tracking-widest">{paymentStatusText}</span>
-                      </div>
-                    ) : '💳 Konfirmasi Pembayaran'}
-                  </button>
+                  userRole === 'ADMIN' ? (
+                    <button onClick={handleConfirmPayment} disabled={isConfirmingPayment} className="w-full bg-indigo-600 text-white font-bold py-3.5 rounded-xl hover:bg-indigo-500 transition disabled:opacity-50 h-14 flex items-center justify-center">
+                      {isConfirmingPayment ? (
+                        <div className="flex flex-col items-center leading-tight">
+                          <svg className="animate-spin h-5 w-5 text-white mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                          <span className="text-[10px] tracking-widest">{paymentStatusText}</span>
+                        </div>
+                      ) : '💳 Konfirmasi Pembayaran'}
+                    </button>
+                  ) : (
+                    <div className="w-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-sm font-semibold p-4 rounded-xl text-center">
+                      ⏳ Menunggu Konfirmasi Admin
+                    </div>
+                  )
                 ) : (
                   <div className="flex gap-2">
                     <button onClick={handleDownloadReceipt} className="flex-1 bg-white/5 border border-[#2a2a3a] text-white font-semibold py-3 rounded-xl hover:bg-white/10 transition flex items-center justify-center gap-2 text-xs">
@@ -1031,16 +1344,18 @@ export default function App() {
 
       {/* TRANSACTION HISTORY */}
       <div className="rounded-2xl border border-[#2a2a3a] bg-[#1c1c26] overflow-hidden">
-        <div className="p-4 border-b border-[#2a2a3a] flex flex-col sm:flex-row items-center justify-between gap-3">
-          <h3 className="text-sm font-bold text-white">Riwayat Transaksi</h3>
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <input type="text" placeholder="🔍 Cari transaksi..." value={txSearchTerm} onChange={e => setTxSearchTerm(e.target.value)} className="w-full sm:w-48 text-xs py-1.5 px-3 bg-[#13131a] border border-[#2a2a3a] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500"/>
-            <select value={txStatusFilter} onChange={e => setTxStatusFilter(e.target.value)} className="text-xs py-1.5 px-2 bg-[#13131a] border border-[#2a2a3a] rounded-lg text-white focus:outline-none focus:border-indigo-500">
+        <div className="p-4 border-b border-[#2a2a3a] flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-bold text-white">Riwayat Transaksi</h3>
+            <span className="text-xs text-gray-500">{filteredTransactions.length} dari {transactions.length} transaksi</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <input type="text" placeholder="🔍 Cari struk/vendor..." value={txSearchTerm} onChange={e => setTxSearchTerm(e.target.value)} className="!w-48 !h-9 text-xs !py-1 bg-[#13131a] border-[#2a2a3a] text-white focus:outline-none focus:border-indigo-500 rounded-lg"/>
+            <select value={txStatusFilter} onChange={e => setTxStatusFilter(e.target.value)} className="!w-32 !h-9 text-xs !py-1 !px-2 bg-[#13131a] border-[#2a2a3a] text-gray-400 focus:outline-none focus:border-indigo-500 rounded-lg">
               <option value="">Semua Status</option>
-              <option value="PAID - SECURE">PAID</option>
               <option value="PENDING">PENDING</option>
+              <option value="PAID - SECURE">PAID</option>
             </select>
-            <span className="text-xs text-gray-500 font-mono whitespace-nowrap ml-1">{filteredTransactions.length} item</span>
           </div>
         </div>
         <table className="w-full text-left text-sm">
@@ -1058,7 +1373,20 @@ export default function App() {
                 <td className="p-3 font-semibold text-white text-sm">{tx.vendor.namaPerusahaan}</td>
                 <td className="p-3 text-gray-400 text-xs">{tx.paymentMethod}</td>
                 <td className="p-3 font-semibold text-emerald-400">Rp {Number(tx.amount).toLocaleString('id-ID')}</td>
-                <td className="p-3"><span className={`text-[10px] font-bold px-2 py-1 rounded-lg ${tx.status === 'PENDING' ? 'bg-yellow-500/10 text-yellow-400' : 'bg-emerald-500/10 text-emerald-400'}`}>{tx.status}</span></td>
+                <td className="p-3">
+                  <div className="flex items-center gap-1.5">
+                    <span className={`text-[10px] font-bold px-2 py-1 rounded-lg ${tx.status === 'PENDING' ? 'bg-yellow-500/10 text-yellow-400' : 'bg-emerald-500/10 text-emerald-400'}`}>{tx.status}</span>
+                    {tx.status === 'PENDING' && !tx.paymentMethod.toLowerCase().includes('cash') && (
+                      <button 
+                        onClick={() => checkTransactionStatus(tx.id)} 
+                        title="Perbarui status dari Midtrans"
+                        className="px-2 py-1 text-[10px] font-semibold rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 transition cursor-pointer"
+                      >
+                        🔄 Cek Status
+                      </button>
+                    )}
+                  </div>
+                </td>
                 {userRole === 'ADMIN' && (
                   <td className="p-3 flex gap-1.5">
                     {tx.status === 'PENDING' && (
@@ -1070,7 +1398,7 @@ export default function App() {
               </tr>
             ))}
             {filteredTransactions.length === 0 && (
-              <tr><td colSpan={userRole === 'ADMIN' ? 7 : 6} className="p-10 text-center text-gray-600 text-sm">Belum ada riwayat transaksi.</td></tr>
+              <tr><td colSpan={userRole === 'ADMIN' ? 7 : 6} className="p-10 text-center text-gray-600 text-sm">Belum ada data transaksi yang cocok.</td></tr>
             )}
           </tbody>
         </table>
@@ -1123,6 +1451,111 @@ export default function App() {
         </div>
       </div>
     </div>
+    )
+  }
+
+  const PaymentGatewayModal = () => {
+    if (!isGatewayOpen || !gatewayTx) return null;
+
+    const methodStr = gatewayTx.method || ''; 
+    const isCard = methodStr.includes('Card');
+    const subName = methodStr.match(/\(([^)]+)\)/)?.[1] || (isCard ? 'BCA' : 'GoPay');
+
+    return (
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+        <div className="bg-[#1c1c26] border border-[#2a2a3a] w-full max-w-md rounded-2xl overflow-hidden shadow-2xl animate-scale-up">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-indigo-900/40 to-purple-900/40 p-5 border-b border-[#2a2a3a] flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🔒</span>
+              <div>
+                <h3 className="text-sm font-bold text-white tracking-wide">SECURE PAYMENT GATEWAY</h3>
+                <p className="text-[10px] text-indigo-400 font-mono">SIMULATOR (MIDTRANS MOCK)</p>
+              </div>
+            </div>
+            <button onClick={() => { setIsGatewayOpen(false); setGatewayTx(null); }} className="text-gray-400 hover:text-white transition text-lg">&times;</button>
+          </div>
+
+          {/* Content */}
+          <div className="p-6 space-y-6">
+            {/* Amount details */}
+            <div className="bg-[#13131a] p-4 rounded-xl border border-[#2a2a3a] flex justify-between items-center">
+              <div>
+                <p className="text-xs text-gray-500 font-semibold uppercase">Total Tagihan</p>
+                <p className="text-xs text-gray-400 mt-0.5">{gatewayTx.vendor}</p>
+              </div>
+              <p className="text-xl font-extrabold text-indigo-400 font-mono">Rp {Number(gatewayTx.amount).toLocaleString('id-ID')}</p>
+            </div>
+
+            {/* Instruction / Sim View */}
+            {isCard ? (
+              <div className="space-y-4 text-center">
+                <div className="inline-block px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 rounded-lg text-xs font-bold uppercase">
+                  Virtual Account {subName}
+                </div>
+                <div className="space-y-2">
+                  <p className="text-xs text-gray-400">Silakan transfer ke nomor Virtual Account berikut:</p>
+                  <div className="bg-[#0f0f13] p-3 rounded-lg flex items-center justify-between border border-[#2a2a3a]">
+                    <span className="font-mono text-white text-base tracking-wider">880120265819{gatewayTx.id || '01'}</span>
+                    <button onClick={() => alert("Nomor VA disalin!")} className="text-xs text-indigo-400 font-semibold hover:text-indigo-300">Salin</button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4 text-center">
+                <div className="inline-block px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-lg text-xs font-bold uppercase">
+                  QRIS / E-Wallet {subName}
+                </div>
+                <div className="flex flex-col items-center justify-center p-3 bg-white rounded-xl w-40 h-44 mx-auto border-2 border-indigo-500/30 shadow-lg">
+                  <svg width="120" height="120" viewBox="0 0 100 100" className="text-black">
+                    <rect width="100" height="100" fill="none" />
+                    <rect x="0" y="0" width="30" height="30" fill="black" />
+                    <rect x="5" y="5" width="20" height="20" fill="white" />
+                    <rect x="10" y="10" width="10" height="10" fill="black" />
+                    <rect x="70" y="0" width="30" height="30" fill="black" />
+                    <rect x="75" y="5" width="20" height="20" fill="white" />
+                    <rect x="80" y="10" width="10" height="10" fill="black" />
+                    <rect x="0" y="70" width="30" height="30" fill="black" />
+                    <rect x="5" y="75" width="20" height="20" fill="white" />
+                    <rect x="10" y="80" width="10" height="10" fill="black" />
+                    <rect x="40" y="10" width="10" height="10" fill="black" />
+                    <rect x="50" y="20" width="10" height="20" fill="black" />
+                    <rect x="40" y="40" width="20" height="10" fill="black" />
+                    <rect x="10" y="50" width="20" height="10" fill="black" />
+                    <rect x="80" y="40" width="10" height="20" fill="black" />
+                    <rect x="70" y="70" width="10" height="10" fill="black" />
+                    <rect x="80" y="80" width="10" height="20" fill="black" />
+                    <rect x="50" y="70" width="10" height="20" fill="black" />
+                  </svg>
+                  <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-2 font-mono">NMID: ID10202658</span>
+                </div>
+                <p className="text-[11px] text-gray-400">Scan QRIS menggunakan aplikasi {subName} atau e-wallet lainnya.</p>
+              </div>
+            )}
+
+            {/* Simulated Action */}
+            <button 
+              onClick={handleSimulatePaymentSuccess} 
+              disabled={isSimulatingPayment} 
+              className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center gap-2 h-14"
+            >
+              {isSimulatingPayment ? (
+                <div className="flex flex-col items-center leading-tight">
+                  <svg className="animate-spin h-5 w-5 text-white mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                  <span className="text-[9px] tracking-wider uppercase font-semibold">Memproses Notifikasi Webhook...</span>
+                </div>
+              ) : (
+                <>💳 Simulasikan Pembayaran Sukses</>
+              )}
+            </button>
+          </div>
+          
+          {/* Footer */}
+          <div className="bg-[#13131a] p-4 text-center border-t border-[#2a2a3a]">
+            <p className="text-[10px] text-gray-500 font-medium">Secured by 256-bit SSL · Demo Project Transaksi Elektronik</p>
+          </div>
+        </div>
+      </div>
     )
   }
 
@@ -1212,119 +1645,7 @@ export default function App() {
       )}
       <EditModal isOpen={editModalOpen} vendor={selectedVendor} onClose={() => setEditModalOpen(false)} onSave={handleUpdateVendor} isLoading={isModalLoading}/>
       <DeleteModal isOpen={deleteModalOpen} vendor={selectedVendor} onClose={() => setDeleteModalOpen(false)} onConfirm={handleDeleteVendor} isLoading={isModalLoading}/>
-
-      {isGatewayOpen && gatewayTx && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md bg-[#13131a] border border-[#2a2a3a] rounded-3xl overflow-hidden shadow-2xl animate-scale-in">
-            {/* Header */}
-            <div className="bg-[#1c1c26] px-6 py-4 border-b border-[#2a2a3a] flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-lg">🔐</span>
-                <div>
-                  <h3 className="text-sm font-extrabold text-white tracking-wider">SECURE PAYMENT GATEWAY</h3>
-                  <p className="text-[10px] text-gray-500 font-mono">SANDBOX SIMULATOR</p>
-                </div>
-              </div>
-              <span className="text-[10px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-0.5 rounded-full uppercase">
-                {gatewayTx.method}
-              </span>
-            </div>
-
-            {/* Content */}
-            <div className="p-6 space-y-6">
-              {/* Amount Display */}
-              <div className="text-center bg-[#1c1c26] p-5 rounded-2xl border border-[#2a2a3a]">
-                <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">TOTAL TAGIHAN</p>
-                <h2 className="text-2xl font-extrabold text-indigo-400 mt-1">
-                  Rp {Number(gatewayTx.amount).toLocaleString('id-ID')}
-                </h2>
-                <div className="flex justify-between items-center text-xs text-gray-400 pt-3 border-t border-[#2a2a3a]/40 mt-3">
-                  <span>Merchant:</span>
-                  <span className="font-semibold text-white">Vendor POS Corp</span>
-                </div>
-                <div className="flex justify-between items-center text-xs text-gray-400 pt-1">
-                  <span>No. Invoice:</span>
-                  <span className="font-mono text-white text-[10px]">{gatewayTx.transactionId}</span>
-                </div>
-                <div className="flex justify-between items-center text-xs text-gray-400 pt-1">
-                  <span>Tujuan:</span>
-                  <span className="font-semibold text-white">{gatewayTx.vendor}</span>
-                </div>
-              </div>
-
-              {/* Instructions / Visual Card / QR Mockup */}
-              {gatewayTx.method.includes('Card') ? (
-                <div className="bg-gradient-to-br from-indigo-600 to-indigo-900 p-5 rounded-2xl text-white shadow-lg space-y-4 relative overflow-hidden">
-                  <div className="absolute right-[-20px] bottom-[-20px] text-white/5 text-9xl font-extrabold select-none">VISA</div>
-                  <div className="flex justify-between items-start">
-                    <span className="text-sm font-bold tracking-wider">ELECTRONIC BILLER CARD</span>
-                    <span className="text-xs italic font-bold">debit/credit</span>
-                  </div>
-                  <div className="pt-2">
-                    <p className="text-xs text-indigo-200 uppercase tracking-widest font-medium">Card Number</p>
-                    <p className="text-lg font-mono tracking-widest">•••• •••• •••• 4890</p>
-                  </div>
-                  <div className="flex justify-between items-center text-xs pt-1">
-                    <div>
-                      <p className="text-[10px] text-indigo-200 uppercase">Expiry</p>
-                      <p className="font-mono">12 / 28</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] text-indigo-200 uppercase">CVC</p>
-                      <p className="font-mono">***</p>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-white p-5 rounded-2xl flex flex-col items-center justify-center border border-gray-200 space-y-3 relative overflow-hidden">
-                  <div className="absolute top-2 left-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">SCAN QRIS</div>
-                  {/* Generated QR Mockup */}
-                  <div className="w-40 h-40 bg-gray-100 flex items-center justify-center rounded-xl border border-gray-200 relative">
-                    <div className="absolute inset-2 border-2 border-dashed border-gray-400 rounded-lg flex items-center justify-center">
-                      <div className="text-4xl">📱</div>
-                    </div>
-                    {/* Corner decorators */}
-                    <div className="absolute top-1 left-1 w-4 h-4 border-t-4 border-l-4 border-indigo-600"></div>
-                    <div className="absolute top-1 right-1 w-4 h-4 border-t-4 border-r-4 border-indigo-600"></div>
-                    <div className="absolute bottom-1 left-1 w-4 h-4 border-b-4 border-l-4 border-indigo-600"></div>
-                    <div className="absolute bottom-1 right-1 w-4 h-4 border-b-4 border-r-4 border-indigo-600"></div>
-                  </div>
-                  <p className="text-[10px] font-bold text-indigo-600 tracking-widest text-center uppercase">
-                    PROSES AUTO-CONFIRM SETELAH SCAN
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* Action Buttons */}
-            <div className="bg-[#1c1c26] px-6 py-4 border-t border-[#2a2a3a] flex flex-col gap-2">
-              <button
-                onClick={handleSimulatePaymentSuccess}
-                disabled={isSimulatingPayment}
-                className="w-full bg-emerald-600 text-white text-xs font-bold py-3.5 rounded-xl hover:bg-emerald-500 transition disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {isSimulatingPayment ? (
-                  <>
-                    <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                    Memverifikasi Transaksi...
-                  </>
-                ) : '✓ Simulasi Pembayaran Sukses'}
-              </button>
-              <button
-                onClick={() => {
-                  setIsGatewayOpen(false);
-                  setGatewayTx(null);
-                  alert("Simulasi pembayaran dibatalkan.");
-                }}
-                disabled={isSimulatingPayment}
-                className="w-full bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white text-xs font-semibold py-3 rounded-xl border border-[#2a2a3a] transition"
-              >
-                Batal / Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <PaymentGatewayModal />
     </div>
   )
 }
