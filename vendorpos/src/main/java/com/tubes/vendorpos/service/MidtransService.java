@@ -45,6 +45,14 @@ public class MidtransService {
     }
 
     public String createSnapToken(Transaction tx) throws Exception {
+        // Validasi eksplisit: server key tidak boleh kosong
+        if (serverKey == null || serverKey.trim().isEmpty()) {
+            throw new IllegalStateException(
+                "Midtrans Server Key belum dikonfigurasi. " +
+                "Set environment variable MIDTRANS_SERVER_KEY atau isi di application.properties."
+            );
+        }
+
         String url = getSnapBaseUrl() + "/transactions";
 
         ObjectNode transactionDetails = objectMapper.createObjectNode();
@@ -74,7 +82,7 @@ public class MidtransService {
             ObjectNode responseNode = (ObjectNode) objectMapper.readTree(response.body());
             return responseNode.get("token").asText();
         } else {
-            throw new RuntimeException("Failed to get Snap token from Midtrans: " + response.body());
+            throw new RuntimeException("Midtrans API error (HTTP " + response.statusCode() + "): " + response.body());
         }
     }
 

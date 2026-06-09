@@ -8,6 +8,50 @@ import { API_CONFIG, getStatusColor, VENDOR_STATUS_OPTIONS } from './config'
 axios.defaults.withCredentials = true
 const BACKEND_URL = `${API_CONFIG.BACKEND_URL}/vendors`
 
+const MIDTRANS_CLIENT_KEY = import.meta.env.VITE_MIDTRANS_CLIENT_KEY || ''
+const MIDTRANS_IS_PRODUCTION = String(import.meta.env.VITE_MIDTRANS_IS_PRODUCTION || 'false') === 'true'
+
+const getSnapScriptUrl = () => {
+  return MIDTRANS_IS_PRODUCTION
+    ? 'https://app.midtrans.com/snap/snap.js'
+    : 'https://app.sandbox.midtrans.com/snap/snap.js'
+}
+
+const ensureMidtransSnapLoaded = async () => {
+  if (window.snap && typeof window.snap.pay === 'function') return
+  if (!MIDTRANS_CLIENT_KEY) throw new Error('VITE_MIDTRANS_CLIENT_KEY belum di-set di frontend (.env)')
+
+  // prevent duplicate script injection
+  const existing = document.querySelector('script[data-midtrans-snap="true"]')
+  if (!existing) {
+    await new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.type = 'text/javascript'
+      script.src = getSnapScriptUrl()
+      script.async = true
+      script.dataset.midtransSnap = 'true'
+      script.dataset.clientKey = MIDTRANS_CLIENT_KEY
+      script.onload = () => resolve()
+      script.onerror = () => reject(new Error('Gagal memuat snap.js dari Midtrans'))
+      document.head.appendChild(script)
+    })
+  }
+
+  // midtrans snap.js reads client key from data-client-key attribute on script
+  // so if script already existed but without client key, reload by re-injecting with correct attrs
+  const scriptAfter = document.querySelector('script[data-midtrans-snap="true"]')
+  if (scriptAfter && !scriptAfter.getAttribute('data-client-key')) {
+    scriptAfter.setAttribute('data-client-key', MIDTRANS_CLIENT_KEY)
+  }
+
+  // Give a tick for window.snap to be attached
+  await new Promise(r => setTimeout(r, 200))
+  if (!window.snap || typeof window.snap.pay !== 'function') {
+    throw new Error('window.snap belum siap setelah memuat snap.js')
+  }
+}
+
+
 export default function App() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -374,33 +418,49 @@ export default function App() {
       setReceipt(newReceipt)
       
       if (paymentMethod === 'Card' || paymentMethod === 'E-Wallet') {
-        if (tx.snapToken && window.snap) {
+        try {
+          if (!tx.snapToken) {
+            throw new Error('snapToken kosong dari backend')
+          }
+
+          await ensureMidtransSnapLoaded()
+
+          // Trigger Snap popup
           window.snap.pay(tx.snapToken, {
             onSuccess: async function(result) {
-              console.log("Midtrans payment success:", result);
-              alert("Pembayaran berhasil diselesaikan!");
-              await checkTransactionStatus(tx.id);
+              console.log("Midtrans onSuccess:", result)
+              // update status dari backend (which uses webhook or status API)
+              await checkTransactionStatus(tx.id)
+              alert("Pembayaran berhasil diselesaikan!")
             },
             onPending: async function(result) {
-              console.log("Midtrans payment pending:", result);
-              alert("Pembayaran tertunda. Silakan selesaikan pembayaran Anda.");
-              await checkTransactionStatus(tx.id);
+              console.log("Midtrans onPending:", result)
+              await checkTransactionStatus(tx.id)
+              alert("Pembayaran tertunda. Silakan selesaikan pembayaran Anda.")
             },
             onError: async function(result) {
-              console.error("Midtrans payment error:", result);
-              alert("Pembayaran gagal!");
-              await checkTransactionStatus(tx.id);
+              console.error("Midtrans onError:", result)
+              await checkTransactionStatus(tx.id)
+              alert("Pembayaran gagal! Periksa status transaksi.")
             },
             onClose: async function() {
-              console.log("Midtrans payment popup closed");
-              await checkTransactionStatus(tx.id);
+              console.log("Midtrans popup closed")
+              await checkTransactionStatus(tx.id)
             }
-          });
-        } else {
-          setGatewayTx(newReceipt)
-          setIsGatewayOpen(true)
+          })
+        } catch (midtransErr) {
+          console.error('Midtrans snap error:', midtransErr)
+          alert(
+            'Pembayaran Midtrans tidak dapat diproses.\n\n' +
+            'Penyebab: ' + (midtransErr?.message || 'Tidak diketahui') + '\n\n' +
+            'Pastikan:\n' +
+            '1. VITE_MIDTRANS_CLIENT_KEY sudah di-set di .env.local\n' +
+            '2. MIDTRANS_SERVER_KEY sudah di-set di environment atau application.properties\n' +
+            '3. Backend sudah di-restart setelah konfigurasi diubah'
+          )
         }
       }
+
 
       setPosSelectedVendor('')
       setPosAmount('')
@@ -409,7 +469,15 @@ export default function App() {
       setPaymentSubOption('')
       fetchTransactions()
     } catch (err) {
-      alert("Gagal membuat tagihan: " + (err.response?.data || "Cek Backend"))
+      const errMsg = err.response?.data || err.message || 'Cek Backend'
+      const statusCode = err.response?.status
+      if (statusCode === 503) {
+        alert('Layanan Midtrans belum dikonfigurasi.\n\n' + errMsg)
+      } else if (statusCode === 502) {
+        alert('Gagal terhubung ke Midtrans.\n\n' + errMsg)
+      } else {
+        alert('Gagal membuat tagihan: ' + errMsg)
+      }
     } finally {
       setIsProcessingPayment(false)
       setPaymentStatusText('')

@@ -7,6 +7,7 @@ import com.tubes.vendorpos.repository.TransactionRepository;
 import com.tubes.vendorpos.repository.VendorRepository;
 import com.tubes.vendorpos.service.MidtransService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -55,9 +56,16 @@ public class TransactionController {
             try {
                 String snapToken = midtransService.createSnapToken(tx);
                 tx.setSnapToken(snapToken);
+            } catch (IllegalStateException e) {
+                // Server key belum dikonfigurasi — kembalikan 503 agar frontend tidak jatuh ke simulator internal
+                System.err.println("[Midtrans] Konfigurasi tidak lengkap: " + e.getMessage());
+                return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                    .body("Midtrans belum dikonfigurasi: " + e.getMessage());
             } catch (Exception e) {
-                System.err.println("Midtrans API error: " + e.getMessage() + ". Falling back to local Mock Simulator.");
-                tx.setSnapToken(null);
+                // Error dari Midtrans API (network, auth, dsb) — kembalikan 502
+                System.err.println("[Midtrans] API error: " + e.getMessage());
+                return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                    .body("Gagal menghubungi Midtrans: " + e.getMessage());
             }
         }
 
