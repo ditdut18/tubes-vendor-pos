@@ -32,7 +32,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/vendors")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(originPatterns = {"http://localhost:*", "http://127.0.0.1:*"}, allowCredentials = "true")
 public class VendorController {
 
     @Autowired

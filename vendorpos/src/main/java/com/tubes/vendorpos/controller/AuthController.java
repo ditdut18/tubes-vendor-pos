@@ -30,7 +30,7 @@ import com.tubes.vendorpos.repository.UserRepository;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+@CrossOrigin(originPatterns = {"http://localhost:*", "http://127.0.0.1:*"}, allowCredentials = "true")
 @Transactional // <-- INI SEGELNYA BIAR GAK ERROR PAS HAPUS TOKEN
 public class AuthController {
 

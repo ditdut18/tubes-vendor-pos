@@ -33,9 +33,9 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
         CorsConfiguration corsConfig = new CorsConfiguration();
-        corsConfig.setAllowedOrigins(List.of("http://localhost:5173"));
+        corsConfig.setAllowedOriginPatterns(List.of("http://localhost:*", "http://127.0.0.1:*"));
         corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        corsConfig.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
+        corsConfig.setAllowedHeaders(List.of("*"));
         corsConfig.setAllowCredentials(true);
 
         http
