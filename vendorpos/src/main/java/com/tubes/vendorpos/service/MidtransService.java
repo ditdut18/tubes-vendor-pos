@@ -99,33 +99,52 @@ public class MidtransService {
 
     public boolean verifySignature(Map<String, Object> payload) {
         try {
-            String orderId = (String) payload.get("order_id");
-            String statusCode = (String) payload.get("status_code");
-            String signatureKey = (String) payload.get("signature_key");
-            
-            String grossAmount = "";
-            Object rawAmount = payload.get("gross_amount");
-            if (rawAmount instanceof Number) {
-                grossAmount = String.format(java.util.Locale.US, "%.2f", ((Number) rawAmount).doubleValue());
-            } else if (rawAmount != null) {
-                grossAmount = String.valueOf(rawAmount);
+            if (payload == null) return false;
+
+            // Field names typically from Midtrans webhook
+            String orderId = getAsString(payload, "order_id");
+            String statusCode = getAsString(payload, "status_code");
+            String signatureKey = getAsString(payload, "signature_key");
+
+            // In some payloads gross_amount can be numeric or string.
+            Object rawAmountObj = payload.get("gross_amount");
+            String grossAmount = rawAmountObj == null ? "" : String.valueOf(rawAmountObj);
+
+            if (isBlank(orderId) || isBlank(statusCode) || isBlank(signatureKey)) {
+                System.out.println("Midtrans signature verify failed: missing fields. order_id=" + orderId + ", status_code=" + statusCode + ", signature_key=" + signatureKey);
+                return false;
             }
-            
-            System.out.println("Verifying Midtrans signature: orderId=" + orderId + ", statusCode=" + statusCode + ", grossAmount=" + grossAmount);
-            
+
+            // Midtrans SHA512 raw string: order_id + status_code + gross_amount + server_key
             String raw = orderId + statusCode + grossAmount + serverKey;
             java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-512");
             byte[] digest = md.digest(raw.getBytes(StandardCharsets.UTF_8));
+
             StringBuilder sb = new StringBuilder();
             for (byte b : digest) {
                 sb.append(String.format("%02x", b));
             }
             String computed = sb.toString();
-            return computed.equalsIgnoreCase(signatureKey);
+
+            boolean ok = computed.equalsIgnoreCase(signatureKey);
+            if (!ok) {
+                System.out.println("Midtrans signature verify failed. expected=" + signatureKey + ", computed=" + computed + ", raw=" + raw);
+            }
+            return ok;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
+    }
+
+    private String getAsString(Map<String, Object> payload, String key) {
+        Object v = payload.get(key);
+        if (v == null) return null;
+        return String.valueOf(v);
+    }
+
+    private boolean isBlank(String s) {
+        return s == null || s.trim().isEmpty();
     }
 
     public String getServerKey() {
