@@ -1,0 +1,121 @@
+{
+  "contractNumber": "KTR2026-10-DK10",
+  "title": "KONTRAK PENGADAAN PRODUK KONSUMEN UNTUK RETAIL OUTLET",
+  "contractDate": "2026-05-01",
+
+  "firstParty": {
+    "companyName": "PT. VENDOR POS TEKNOLOGI",
+    "address": "Jl. Telekomunikasi No. 1, Bandung, Jawa Barat 40123",
+    "pic": "Haryanto Tjandra, S.E.",
+    "position": "Direktur Retail & Distribusi"
+  },
+
+  "secondParty": {
+    "companyName": "PT. Gudang Garam Tbk",
+    "address": "Jalan Semampir II No. 1, Kediri, Jawa Timur 64121",
+    "pic": "Agus Salim, S.H.",
+    "position": "National Sales Manager"
+  },
+
+  "object": "PENGADAAN PRODUK KONSUMEN UNTUK GERAI RETAIL PERUSAHAAN",
+  "objectDescription": "Pihak Kedua menyediakan produk konsumen untuk dijual kembali di gerai retail milik Pihak Pertama yang tersebar di 50 lokasi.",
+
+  "scope": {
+    "description": "Lingkup pengadaan meliputi:",
+    "items": [
+      "Pengadaan produk konsumen untuk 50 gerai retail",
+      "Sistem konsinyasi dengan rotasi stok setiap 2 minggu",
+      "Program promo dan diskon khusus untuk gerai Pihak Pertama",
+      "Display rack dan point of purchase material gratis",
+      "Training product knowledge untuk staf retail",
+      "Sistem pengembalian produk tidak laku (retur)"
+    ]
+  },
+
+  "contractValue": 4200000000,
+  "contractValueText": "Rp4.200.000.000,- (empat miliar dua ratus juta rupiah)",
+  "currency": "IDR",
+
+  "paymentTerms": {
+    "description": "Pembayaran konsinyasi setiap bulan berdasarkan produk terjual:",
+    "terms": [
+      {
+        "term": 1,
+        "percentage": 100,
+        "description": "Pembayaran H+30 berdasarkan laporan penjualan bulanan yang sudah diverifikasi",
+        "dueDate": "H+30 setelah laporan penjualan"
+      }
+    ],
+    "paymentMethod": "Transfer Bank ke rekening PT. Gudang Garam Tbk (Mandiri: 555-666-7777)"
+  },
+
+  "rightsAndObligations": {
+    "firstParty": {
+      "title": "HAK DAN KEWAJIBAN PIHAK PERTAMA",
+      "rights": [
+        "Mendapatkan produk dengan harga distributor resmi",
+        "Mengembalikan produk yang tidak laku maksimal 10% dari total kiriman",
+        "Mendapatkan display rack gratis untuk setiap gerai"
+      ],
+      "obligations": [
+        "Melaporkan penjualan secara akurat setiap minggu",
+        "Menjaga tampilan produk dan display sesuai standar",
+        "Tidak menjual produk kompetitor langsung yang sejenis"
+      ]
+    },
+    "secondParty": {
+      "title": "HAK DAN KEWAJIBAN PIHAK KEDUA",
+      "rights": [
+        "Melakukan visit dan audit display ke gerai-gerai",
+        "Memasang materi promosi di gerai"
+      ],
+      "obligations": [
+        "Mengirim produk tepat waktu dan sesuai pesanan",
+        "Menarik produk expired dari rak secara gratis",
+        "Memberikan rotating stok untuk produk slow-moving",
+        "Memberikan reward penjualan untuk staf retail berprestasi"
+      ]
+    }
+  },
+
+  "confidentialityClause": "Data penjualan, margin, dan strategi distribusi retail bersifat rahasia dan dilindungi oleh perjanjian kerahasiaan ini.",
+
+  "disputeResolution": "Diselesaikan secara musyawarah. Jika gagal, melalui Pengadilan Negeri Kediri.",
+
+  "validityPeriod": {
+    "startDate": "2026-05-01",
+    "endDate": "2027-05-01",
+    "duration": "12 (dua belas) bulan kalender",
+    "description": "Kontrak percobaan 1 tahun dengan evaluasi setiap 3 bulan."
+  },
+
+  "status": "PENDING",
+
+  "signatureArea": {
+    "location": "Kediri",
+    "date": "1 Mei 2026",
+    "firstParty": {
+      "name": "Haryanto Tjandra, S.E.",
+      "position": "Direktur Retail & Distribusi",
+      "company": "PT. Vendor POS Teknologi"
+    },
+    "secondParty": {
+      "name": "Agus Salim, S.H.",
+      "position": "National Sales Manager",
+      "company": "PT. Gudang Garam Tbk"
+    },
+    "witnesses": []
+  },
+
+  "metadata": {
+    "createdAt": "2026-05-01T09:00:00+07:00",
+    "updatedAt": "2026-05-01T09:00:00+07:00",
+    "createdBy": "admin",
+    "createdByRole": "ADMIN",
+    "documentVersion": "1.0",
+    "documentType": "KONTRAK_PENGADAAN",
+    "tags": ["retail", "produk-konsumen", "konsinyasi"],
+    "approvalStatus": "PENDING_APPROVAL",
+    "approvedBy": null
+  }
+}

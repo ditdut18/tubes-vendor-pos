@@ -1,0 +1,128 @@
+{
+  "contractNumber": "KTR2026-09-DK09",
+  "title": "KONTRAK PENYEDIAAN LAYANAN PERBANKAN DAN PAYMENT GATEWAY",
+  "contractDate": "2026-04-15",
+
+  "firstParty": {
+    "companyName": "PT. VENDOR POS TEKNOLOGI",
+    "address": "Jl. Telekomunikasi No. 1, Bandung, Jawa Barat 40123",
+    "pic": "William Tanoto, S.E., M.B.A.",
+    "position": "Direktur Keuangan & Treasury"
+  },
+
+  "secondParty": {
+    "companyName": "PT. Bank Central Asia Tbk",
+    "address": "Jalan MH Thamrin No. 1, Jakarta Pusat 10310",
+    "pic": "Linda Susanti, S.E., M.B.A.",
+    "position": "Corporate Banking Director"
+  },
+
+  "object": "PENYEDIAAN LAYANAN PAYMENT GATEWAY, VIRTUAL ACCOUNT, DAN CASH MANAGEMENT SYSTEM",
+  "objectDescription": "Pihak Kedua menyediakan layanan perbankan korporasi terintegrasi untuk mendukung sistem pembayaran dan pengelolaan keuangan Pihak Pertama.",
+
+  "scope": {
+    "description": "Lingkup layanan meliputi:",
+    "items": [
+      "Virtual account untuk 25 cabang dan 150 vendor",
+      "Payment gateway untuk integrasi dengan sistem POS dan e-commerce",
+      "Cash management system (CMS) untuk manajemen arus kas real-time",
+      "Host-to-host connection untuk otomatisasi rekonsiliasi",
+      "Payroll processing untuk 500+ karyawan",
+      "Corporate credit card untuk 50 manager dengan limit Rp100 juta/manager",
+      "Layanan trade finance: L/C, bank garansi, dan SKBDN",
+      "Dedicated relationship officer dan priority handling"
+    ]
+  },
+
+  "contractValue": 2500000000,
+  "contractValueText": "Rp2.500.000.000,- (dua miliar lima ratus juta rupiah) — estimasi transaksi tahunan",
+  "currency": "IDR",
+
+  "paymentTerms": {
+    "description": "Biaya layanan dibebankan per transaksi dan per bulan:",
+    "terms": [
+      {
+        "term": 1,
+        "percentage": 100,
+        "description": "Biaya administrasi bulanan dan fee transaksi dibebankan setiap awal bulan",
+        "dueDate": "Setiap tanggal 1"
+      }
+    ],
+    "paymentMethod": "Auto-debit dari rekening Giro perusahaan di BCA"
+  },
+
+  "rightsAndObligations": {
+    "firstParty": {
+      "title": "HAK DAN KEWAJIBAN PIHAK PERTAMA",
+      "rights": [
+        "Mendapatkan layanan 24/7 untuk transaksi perbankan",
+        "Mendapatkan prioritas untuk transaksi urgent",
+        "Mendapatkan laporan transaksi harian otomatis"
+      ],
+      "obligations": [
+        "Menjaga saldo minimal sesuai ketentuan corporate account",
+        "Melaporkan perubahan data perusahaan dan authorized signatory",
+        "Menjaga keamanan credential dan token otentikasi"
+      ]
+    },
+    "secondParty": {
+      "title": "HAK DAN KEWAJIBAN PIHAK KEDUA",
+      "rights": [
+        "Mengenakan biaya sesuai tariff yang disepakati",
+        "Melakukan audit transaksi jika ada indikasi kecurangan"
+      ],
+      "obligations": [
+        "Menjamin keamanan transaksi perbankan",
+        "Memberikan respons cepat untuk keluhan dan masalah teknis",
+        "Menyediakan API dokumentasi dan technical support",
+        "Melakukan upgrade sistem secara berkala tanpa mengganggu operasional"
+      ]
+    }
+  },
+
+  "confidentialityClause": "Seluruh data transaksi keuangan, saldo rekening, dan informasi perbankan Pihak Pertama bersifat sangat rahasia dan dilindungi oleh Undang-Undang Perbankan dan kerahasiaan bank.",
+
+  "disputeResolution": "Diselesaikan secara musyawarah. Jika tidak tercapai, melalui Pengadilan Negeri Jakarta Pusat atau melalui mediasi OJK.",
+
+  "validityPeriod": {
+    "startDate": "2026-04-15",
+    "endDate": "2029-04-15",
+    "duration": "36 (tiga puluh enam) bulan kalender",
+    "description": "Kontrak kerja sama 3 tahun dengan evaluasi kinerja setiap tahun."
+  },
+
+  "status": "ACTIVE",
+
+  "signatureArea": {
+    "location": "Jakarta",
+    "date": "15 April 2026",
+    "firstParty": {
+      "name": "William Tanoto, S.E., M.B.A.",
+      "position": "Direktur Keuangan & Treasury",
+      "company": "PT. Vendor POS Teknologi"
+    },
+    "secondParty": {
+      "name": "Linda Susanti, S.E., M.B.A.",
+      "position": "Corporate Banking Director",
+      "company": "PT. Bank Central Asia Tbk"
+    },
+    "witnesses": [
+      {
+        "name": "Ir. Handoko Setiadi, M.M.",
+        "position": "Komisaris Utama"
+      }
+    ]
+  },
+
+  "metadata": {
+    "createdAt": "2026-04-15T10:00:00+07:00",
+    "updatedAt": "2026-04-15T10:00:00+07:00",
+    "createdBy": "admin",
+    "createdByRole": "ADMIN",
+    "documentVersion": "1.0",
+    "documentType": "KONTRAK_LAYANAN",
+    "tags": ["perbankan", "payment-gateway", "keuangan", "cash-management"],
+    "approvalStatus": "APPROVED",
+    "approvedBy": "Dewan Komisaris"
+  }
+}

@@ -1,0 +1,127 @@
+{
+  "contractNumber": "KTR2026-07-DK07",
+  "title": "KONTRAK PENYEDIAAN TENAGA LISTRIK UNTUK OPERASIONAL PERUSAHAAN",
+  "contractDate": "2026-03-15",
+
+  "firstParty": {
+    "companyName": "PT. VENDOR POS TEKNOLOGI",
+    "address": "Jl. Telekomunikasi No. 1, Bandung, Jawa Barat 40123",
+    "pic": "Supriyono, S.T., M.T.",
+    "position": "Direktur Fasilitas & Infrastruktur"
+  },
+
+  "secondParty": {
+    "companyName": "PT. Perusahaan Listrik Negara (Persero)",
+    "address": "Jalan Trunojoyo Blok M-I No. 135, Jakarta Selatan 12190",
+    "pic": "Ir. Dwi Hartanto, M.T.",
+    "position": "Manager Pelayanan Pelanggan Tegangan Menengah"
+  },
+
+  "object": "PENYEDIAAN TENAGA LISTRIK TEGANGAN MENENGAH UNTUK OPERASIONAL PABRIK DAN KANTOR",
+  "objectDescription": "Pihak Kedua menyediakan tenaga listrik tegangan menengah (TM) 20 kV untuk kebutuhan operasional pabrik dan kantor pusat Pihak Pertama dengan kapasitas kontrak 5 MW.",
+
+  "scope": {
+    "description": "Lingkup penyediaan meliputi:",
+    "items": [
+      "Pasokan listrik tegangan menengah 20 kV untuk pabrik dan kantor pusat",
+      "Daya kontrak 5 MVA dengan cadangan 20%",
+      "Instalasi gardu listrik dan panel tegangan menengah",
+      "Pemeliharaan rutin jaringan listrik setiap 6 bulan",
+      "Layanan call center 24 jam dan prioritas perbaikan gangguan",
+      "Sistem monitoring pemakaian real-time via web",
+      "Audit energi tahunan dan rekomendasi efisiensi"
+    ]
+  },
+
+  "contractValue": 18750000000,
+  "contractValueText": "Rp18.750.000.000,- (delapan belas miliar tujuh ratus lima puluh juta rupiah)",
+  "currency": "IDR",
+
+  "paymentTerms": {
+    "description": "Pembayaran berdasarkan pemakaian bulanan:",
+    "terms": [
+      {
+        "term": 1,
+        "percentage": 100,
+        "description": "Pembayaran rekening listrik setiap bulan sesuai pemakaian (pasca bayar)",
+        "dueDate": "H+20 setelah penerbitan tagihan"
+      }
+    ],
+    "paymentMethod": "Auto-debit via rekening perusahaan di Bank Mandiri"
+  },
+
+  "rightsAndObligations": {
+    "firstParty": {
+      "title": "HAK DAN KEWAJIBAN PIHAK PERTAMA",
+      "rights": [
+        "Mendapatkan pasokan listrik stabil 24 jam",
+        "Mendapatkan prioritas pemulihan jika terjadi pemadaman",
+        "Meminta audit pemakaian listrik secara periodik"
+      ],
+      "obligations": [
+        "Membayar tagihan listrik tepat waktu",
+        "Tidak melebihi daya kontrak tanpa pemberitahuan",
+        "Menjaga instalasi listrik internal sesuai standar PUIL"
+      ]
+    },
+    "secondParty": {
+      "title": "HAK DAN KEWAJIBAN PIHAK KEDUA",
+      "rights": [
+        "Melakukan pemadaman terprogram dengan pemberitahuan 3 hari kerja",
+        "Memasang alat monitoring dan pembatas daya"
+      ],
+      "obligations": [
+        "Menjamin ketersediaan daya sesuai kontrak",
+        "Memberikan pemberitahuan pemadaman minimal 3 hari sebelumnya",
+        "Menangani gangguan maksimal 6 jam",
+        "Memberikan kompensasi jika pemadaman tidak terjadwal > 6 jam"
+      ]
+    }
+  },
+
+  "confidentialityClause": "Data pemakaian listrik, kapasitas produksi, dan pola operasional pabrik Pihak Pertama bersifat rahasia dan tidak boleh diungkapkan kepada pihak ketiga.",
+
+  "disputeResolution": "Perselisihan diselesaikan secara musyawarah. Jika tidak tercapai, melalui Badan Regulasi Ketenagalistrikan atau Pengadilan Negeri Jakarta Selatan.",
+
+  "validityPeriod": {
+    "startDate": "2026-03-15",
+    "endDate": "2027-03-15",
+    "duration": "12 (dua belas) bulan kalender",
+    "description": "Kontrak berlaku 12 bulan dan dapat diperpanjang setiap tahun dengan penyesuaian tarif sesuai ketetapan Pemerintah."
+  },
+
+  "status": "ACTIVE",
+
+  "signatureArea": {
+    "location": "Jakarta",
+    "date": "15 Maret 2026",
+    "firstParty": {
+      "name": "Supriyono, S.T., M.T.",
+      "position": "Direktur Fasilitas & Infrastruktur",
+      "company": "PT. Vendor POS Teknologi"
+    },
+    "secondParty": {
+      "name": "Ir. Dwi Hartanto, M.T.",
+      "position": "Manager Pelayanan Pelanggan TM",
+      "company": "PT. PLN (Persero)"
+    },
+    "witnesses": [
+      {
+        "name": "Ahmad Rasyid, S.H.",
+        "position": "Notaris"
+      }
+    ]
+  },
+
+  "metadata": {
+    "createdAt": "2026-03-15T08:30:00+07:00",
+    "updatedAt": "2026-03-15T08:30:00+07:00",
+    "createdBy": "admin",
+    "createdByRole": "ADMIN",
+    "documentVersion": "1.0",
+    "documentType": "KONTRAK_LAYANAN",
+    "tags": ["listrik", "energi", "PLN", "operasional"],
+    "approvalStatus": "APPROVED",
+    "approvedBy": "Legal Department"
+  }
+}

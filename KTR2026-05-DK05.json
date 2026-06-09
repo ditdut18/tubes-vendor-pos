@@ -1,0 +1,127 @@
+{
+  "contractNumber": "KTR2026-05-DK05",
+  "title": "KONTRAK PENYEDIAAN LAYANAN TELEKOMUNIKASI DAN INFRASTRUKTUR IT",
+  "contractDate": "2026-02-10",
+
+  "firstParty": {
+    "companyName": "PT. VENDOR POS TEKNOLOGI",
+    "address": "Jl. Telekomunikasi No. 1, Bandung, Jawa Barat 40123",
+    "pic": "Denny Setiawan, S.T., M.M.",
+    "position": "Direktur Teknologi Informasi"
+  },
+
+  "secondParty": {
+    "companyName": "PT. Telkom Indonesia Tbk",
+    "address": "Jalan Japati No. 1, Bandung, Jawa Barat 40133",
+    "pic": "Ir. M. Irfan Yusuf, S.T., M.T.",
+    "position": "Enterprise Account Director"
+  },
+
+  "object": "PENYEDIAAN LAYANAN INTERNET DEDICATED, VPN KORPORASI, DAN INFRASTRUKTUR TELEKOMUNIKASI",
+  "objectDescription": "Pihak Kedua menyediakan layanan telekomunikasi dan infrastruktur IT untuk menghubungkan seluruh kantor Pihak Pertama di Indonesia dengan kualitas enterprise-grade.",
+
+  "scope": {
+    "description": "Lingkup pekerjaan meliputi:",
+    "items": [
+      "Internet dedicated 100 Mbps untuk kantor pusat (Bandung)",
+      "Internet dedicated 50 Mbps untuk 25 kantor cabang",
+      "VPN IP MPLS untuk menghubungkan seluruh kantor",
+      "Hosting server dan colocation di data center Telkom",
+      "Layanan cloud computing (Telkom Cloud)",
+      "SLA 99.9% uptime dengan kompensasi",
+      "Layanan helpdesk 24/7 dan on-site engineer"
+    ]
+  },
+
+  "contractValue": 12000000000,
+  "contractValueText": "Rp12.000.000.000,- (dua belas miliar rupiah)",
+  "currency": "IDR",
+
+  "paymentTerms": {
+    "description": "Pembayaran bulanan berdasarkan pemakaian:",
+    "terms": [
+      {
+        "term": 1,
+        "percentage": 100,
+        "description": "Pembayaran bulanan setiap tanggal 10, berdasarkan usage bulan sebelumnya",
+        "dueDate": "Setiap tanggal 10"
+      }
+    ],
+    "paymentMethod": "Auto-debit dari rekening perusahaan ke rekening PT. Telkom Indonesia Tbk"
+  },
+
+  "rightsAndObligations": {
+    "firstParty": {
+      "title": "HAK DAN KEWAJIBAN PIHAK PERTAMA",
+      "rights": [
+        "Mendapatkan layanan sesuai SLA yang disepakati (99.9%)",
+        "Mendapatkan kompensasi jika SLA tidak terpenuhi",
+        "Meminta laporan bulanan availability dan performa jaringan"
+      ],
+      "obligations": [
+        "Pembayaran tepat waktu setiap bulan",
+        "Menyediakan akses ke lokasi untuk instalasi dan maintenance",
+        "Tidak melakukan perubahan konfigurasi tanpa koordinasi"
+      ]
+    },
+    "secondParty": {
+      "title": "HAK DAN KEWAJIBAN PIHAK KEDUA",
+      "rights": [
+        "Melakukan maintenance terjadwal dengan pemberitahuan 48 jam",
+        "Menyesuaikan bandwidth pricing setiap tahun berdasarkan penggunaan"
+      ],
+      "obligations": [
+        "Menjamin kualitas koneksi sesuai SLA",
+        "Menangani gangguan maksimal 4 jam untuk level kritikal",
+        "Memberikan early warning untuk maintenance terjadwal",
+        "Menyediakan dedicated account manager"
+      ]
+    }
+  },
+
+  "confidentialityClause": "Seluruh data jaringan, konfigurasi sistem, dan arsitektur IT Pihak Pertama yang diketahui oleh Pihak Kedua dalam pelaksanaan kontrak ini bersifat rahasia dan dilindungi oleh Undang-Undang Informasi dan Transaksi Elektronik (UU ITE).",
+
+  "disputeResolution": "Perselisihan diselesaikan melalui musyawarah. Jika tidak tercapai kesepakatan, akan diselesaikan melalui BANI (Badan Arbitrase Nasional Indonesia) di Jakarta.",
+
+  "validityPeriod": {
+    "startDate": "2026-02-10",
+    "endDate": "2029-02-10",
+    "duration": "36 (tiga puluh enam) bulan kalender",
+    "description": "Kontrak jangka panjang 3 tahun dengan evaluasi tahunan. Harga akan direview setiap tahun berdasarkan consumer price index."
+  },
+
+  "status": "ACTIVE",
+
+  "signatureArea": {
+    "location": "Bandung",
+    "date": "10 Februari 2026",
+    "firstParty": {
+      "name": "Denny Setiawan, S.T., M.M.",
+      "position": "Direktur Teknologi Informasi",
+      "company": "PT. Vendor POS Teknologi"
+    },
+    "secondParty": {
+      "name": "Ir. M. Irfan Yusuf, S.T., M.T.",
+      "position": "Enterprise Account Director",
+      "company": "PT. Telkom Indonesia Tbk"
+    },
+    "witnesses": [
+      {
+        "name": "Kristian Halim, S.H.",
+        "position": "Notaris"
+      }
+    ]
+  },
+
+  "metadata": {
+    "createdAt": "2026-02-10T10:00:00+07:00",
+    "updatedAt": "2026-02-10T10:00:00+07:00",
+    "createdBy": "admin",
+    "createdByRole": "ADMIN",
+    "documentVersion": "1.0",
+    "documentType": "KONTRAK_LAYANAN",
+    "tags": ["telekomunikasi", "internet", "IT", "infrastruktur"],
+    "approvalStatus": "APPROVED",
+    "approvedBy": "Direktur Utama"
+  }
+}

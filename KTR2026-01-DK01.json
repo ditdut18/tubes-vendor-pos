@@ -1,0 +1,146 @@
+{
+  "contractNumber": "KTR2026-01-DK01",
+  "title": "KONTRAK PENGADAAN BAHAN BAKU SEMEN",
+  "contractDate": "2026-01-02",
+
+  "firstParty": {
+    "companyName": "PT. VENDOR POS TEKNOLOGI",
+    "address": "Jl. Telekomunikasi No. 1, Bandung, Jawa Barat 40123",
+    "pic": "Ir. Aditya Luthfi, S.T., M.M.",
+    "position": "Direktur Utama"
+  },
+
+  "secondParty": {
+    "companyName": "PT. Semen Indonesia Tbk",
+    "address": "Jl. Veteran No. 88, Gresik, Jawa Timur 61122",
+    "pic": "Ir. Bambang Setiawan, M.M.",
+    "position": "Direktur Penjualan & Distribusi"
+  },
+
+  "object": "PENGADAAN BAHAN BAKU SEMEN UNTUK PROYEK INFRASTRUKTUR",
+  "objectDescription": "Pihak Kedua menyediakan dan menyerahkan bahan baku semen jenis Portland Composite Cement (PCC) dan Ordinary Portland Cement (OPC) kepada Pihak Pertama untuk kebutuhan proyek infrastruktur perusahaan.",
+
+  "scope": {
+    "description": "Ruang lingkup pekerjaan meliputi pengadaan, pengiriman, dan penempatan bahan baku semen ke gudang pusat Pihak Pertama dengan spesifikasi sebagai berikut:",
+    "items": [
+      "Pengadaan semen PCC sebanyak 300 ton per bulan",
+      "Pengadaan semen OPC sebanyak 200 ton per bulan",
+      "Pengiriman menggunakan armada truk tangki semen milik Pihak Kedua",
+      "Penempatan dan penataan di gudang penyimpanan Pihak Pertama",
+      "Quality control dan sertifikasi mutu setiap pengiriman",
+      "Laporan bulanan stok dan pengiriman"
+    ]
+  },
+
+  "contractValue": 15000000000,
+  "contractValueText": "Rp15.000.000.000,- (lima belas miliar rupiah)",
+  "currency": "IDR",
+
+  "paymentTerms": {
+    "description": "Pembayaran dilakukan secara termin dengan ketentuan sebagai berikut:",
+    "terms": [
+      {
+        "term": 1,
+        "percentage": 30,
+        "description": "Pembayaran di muka (down payment) sebesar 30% setelah penandatanganan kontrak",
+        "dueDate": "2026-01-09"
+      },
+      {
+        "term": 2,
+        "percentage": 40,
+        "description": "Pembayaran termin kedua sebesar 40% setelah pengiriman bulan ke-3",
+        "dueDate": "2026-04-02"
+      },
+      {
+        "term": 3,
+        "percentage": 30,
+        "description": "Pembayaran pelunasan sebesar 30% setelah seluruh pengiriman selesai dan BAST ditandatangani",
+        "dueDate": "2027-01-02"
+      }
+    ],
+    "paymentMethod": "Transfer Bank ke rekening Pihak Kedua (PT. Semen Indonesia Tbk - BCA: 123-456-7890)"
+  },
+
+  "rightsAndObligations": {
+    "firstParty": {
+      "title": "HAK DAN KEWAJIBAN PIHAK PERTAMA",
+      "rights": [
+        "Menerima barang sesuai spesifikasi yang telah disepakati",
+        "Melakukan quality control terhadap barang yang diterima",
+        "Mendapatkan laporan pengiriman secara berkala",
+        "Mengajukan klaim apabila barang tidak sesuai spesifikasi"
+      ],
+      "obligations": [
+        "Melakukan pembayaran tepat waktu sesuai termin yang disepakati",
+        "Menyediakan akses gudang yang memadai untuk proses bongkar muat",
+        "Menunjuk PIC yang bertanggung jawab dalam proses penerimaan barang",
+        "Memberikan konfirmasi penerimaan barang maksimal 1x24 jam setelah barang diterima"
+      ]
+    },
+    "secondParty": {
+      "title": "HAK DAN KEWAJIBAN PIHAK KEDUA",
+      "rights": [
+        "Menerima pembayaran sesuai dengan termin yang disepakati",
+        "Mendapatkan konfirmasi penerimaan barang dari Pihak Pertama",
+        "Menunda pengiriman apabila pembayaran termin belum diterima"
+      ],
+      "obligations": [
+        "Menyediakan barang sesuai spesifikasi, kuantitas, dan jadwal yang disepakati",
+        "Menjamin kualitas barang sesuai standar SNI",
+        "Memberikan sertifikat mutu untuk setiap lot pengiriman",
+        "Menanggung biaya pengiriman dan asuransi selama barang dalam perjalanan"
+      ]
+    }
+  },
+
+  "confidentialityClause": "Para Pihak sepakat untuk menjaga kerahasiaan seluruh informasi yang diperoleh selama pelaksanaan kontrak ini, termasuk namun tidak terbatas pada: harga satuan barang, volume pengiriman, spesifikasi teknis, dan data bisnis lainnya. Kewajiban kerahasiaan ini tetap berlaku untuk jangka waktu 3 (tiga) tahun setelah berakhirnya kontrak. Pelanggaran terhadap klausul kerahasiaan ini akan dikenakan sanksi ganti rugi sebesar 20% dari nilai kontrak.",
+
+  "disputeResolution": "Apabila terjadi perselisihan dalam pelaksanaan kontrak ini, Para Pihak sepakat untuk menyelesaikannya secara musyawarah terlebih dahulu. Apabila musyawarah tidak mencapai kesepakatan dalam waktu 30 (tiga puluh) hari kalender, maka perselisihan akan diselesaikan melalui Badan Arbitrase Nasional Indonesia (BANI) sesuai dengan peraturan yang berlaku. Tempat arbitrase di Jakarta.",
+
+  "validityPeriod": {
+    "startDate": "2026-01-02",
+    "endDate": "2027-01-02",
+    "duration": "12 (dua belas) bulan kalender",
+    "description": "Kontrak ini berlaku efektif sejak tanggal ditandatangani oleh kedua belah pihak dan berakhir pada tanggal 2 Januari 2027. Perpanjangan kontrak dapat dilakukan dengan addendum yang disetujui oleh kedua belah pihak."
+  },
+
+  "status": "ACTIVE",
+
+  "signatureArea": {
+    "location": "Jakarta",
+    "date": "2 Januari 2026",
+    "firstParty": {
+      "name": "Ir. Aditya Luthfi, S.T., M.M.",
+      "position": "Direktur Utama",
+      "company": "PT. Vendor POS Teknologi"
+    },
+    "secondParty": {
+      "name": "Ir. Bambang Setiawan, M.M.",
+      "position": "Direktur Penjualan & Distribusi",
+      "company": "PT. Semen Indonesia Tbk"
+    },
+    "witnesses": [
+      {
+        "name": "Rina Marlina, S.H., M.Kn.",
+        "position": "Notaris"
+      },
+      {
+        "name": "Arief Hidayat, S.T.",
+        "position": "Manager Legal"
+      }
+    ]
+  },
+
+  "metadata": {
+    "createdAt": "2026-01-02T09:00:00+07:00",
+    "updatedAt": "2026-01-02T09:00:00+07:00",
+    "createdBy": "admin",
+    "createdByRole": "ADMIN",
+    "documentVersion": "1.0",
+    "documentType": "KONTRAK_PENGADAAN",
+    "tags": ["semen", "bahan-baku", "infrastruktur"],
+    "approvalStatus": "APPROVED",
+    "approvedBy": "Legal Department",
+    "approvedAt": "2026-01-02T14:30:00+07:00"
+  }
+}

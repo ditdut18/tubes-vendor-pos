@@ -1,0 +1,135 @@
+{
+  "contractNumber": "KTR2026-11-DK11",
+  "title": "KONTRAK PENGELOLAAN DAN SEWA PROPERTI KANTOR CABANG",
+  "contractDate": "2026-05-15",
+
+  "firstParty": {
+    "companyName": "PT. VENDOR POS TEKNOLOGI",
+    "address": "Jl. Telekomunikasi No. 1, Bandung, Jawa Barat 40123",
+    "pic": "Kristian Halim, S.T., M.M.",
+    "position": "Direktur Properti & Fasilitas"
+  },
+
+  "secondParty": {
+    "companyName": "PT. Sinar Mas Multiartha Tbk",
+    "address": "Jalan MH Thamrin No. 51, Jakarta Pusat 10350",
+    "pic": "Ir. Handoko Setiadi, M.M.",
+    "position": "Direktur Properti Komersial"
+  },
+
+  "object": "PENGELOLAAN DAN SEWA RUANG KANTOR CABANG DI GEDUNG SINAR MAS LAND",
+  "objectDescription": "Pihak Kedua menyewakan dan mengelola ruang kantor di gedung-gedung properti milik Sinar Mas untuk digunakan sebagai kantor cabang Pihak Pertama.",
+
+  "scope": {
+    "description": "Lingkup pengelolaan meliputi:",
+    "items": [
+      "Sewa ruang kantor di 10 lokasi gedung Sinar Mas Land",
+      "Luas total: 2.500 m2 untuk 10 cabang (rata-rata 250 m2 per cabang)",
+      "Renovasi dan fit-out interior kantor sesuai standar perusahaan",
+      "Biaya service charge, keamanan, dan kebersihan termasuk",
+      "Parkir mobil untuk 50 kendaraan operasional",
+      "Fasilitas: AC central, listrik, lift, genset, dan akses kontrol",
+      "Opsi perpanjangan sewa dengan kenaikan maksimal 10% per 2 tahun"
+    ]
+  },
+
+  "contractValue": 22000000000,
+  "contractValueText": "Rp22.000.000.000,- (dua puluh dua miliar rupiah) — estimasi sewa 2 tahun",
+  "currency": "IDR",
+
+  "paymentTerms": {
+    "description": "Pembayaran sewa secara tahunan:",
+    "terms": [
+      {
+        "term": 1,
+        "percentage": 50,
+        "description": "Pembayaran tahun pertama di muka sebesar 50% saat kontrak ditandatangani",
+        "dueDate": "2026-05-22"
+      },
+      {
+        "term": 2,
+        "percentage": 50,
+        "description": "Pelunasan tahun pertama sebesar 50% setelah serah terima kunci",
+        "dueDate": "2026-06-01"
+      }
+    ],
+    "paymentMethod": "Transfer Bank ke rekening PT. Sinar Mas Multiartha Tbk (BCA: 333-444-5555)"
+  },
+
+  "rightsAndObligations": {
+    "firstParty": {
+      "title": "HAK DAN KEWAJIBAN PIHAK PERTAMA",
+      "rights": [
+        "Menggunakan ruang kantor sesuai peruntukan",
+        "Melakukan renovasi interior dengan izin Pihak Kedua",
+        "Memasang papan nama perusahaan di lobby gedung",
+        "Mendapatkan prioritas perpanjangan sewa"
+      ],
+      "obligations": [
+        "Membayar sewa tepat waktu",
+        "Menjaga kebersihan dan ketertiban ruangan",
+        "Tidak melakukan sub-sewa tanpa izin",
+        "Mengembalikan ruangan dalam kondisi baik saat kontrak berakhir"
+      ]
+    },
+    "secondParty": {
+      "title": "HAK DAN KEWAJIBAN PIHAK KEDUA",
+      "rights": [
+        "Melakukan inspeksi ruangan secara berkala",
+        "Menyesuaikan biaya service charge setiap tahun"
+      ],
+      "obligations": [
+        "Menyediakan ruangan sesuai spesifikasi yang disepakati",
+        "Menjamin keamanan dan kenyamanan gedung",
+        "Menangani perbaikan fasilitas umum maksimal 2x24 jam",
+        "Menyediakan area bongkar muat dan loading dock"
+      ]
+    }
+  },
+
+  "confidentialityClause": "Data layout kantor, sistem keamanan, dan informasi operasional Pihak Pertama yang diketahui Pihak Kedua bersifat rahasia.",
+
+  "disputeResolution": "Diselesaikan secara musyawarah. Jika gagal, melalui Pengadilan Negeri Jakarta Pusat.",
+
+  "validityPeriod": {
+    "startDate": "2026-05-15",
+    "endDate": "2028-05-15",
+    "duration": "24 (dua puluh empat) bulan kalender",
+    "description": "Kontrak sewa 2 tahun dengan opsi perpanjangan 2 tahun berikutnya."
+  },
+
+  "status": "ACTIVE",
+
+  "signatureArea": {
+    "location": "Jakarta",
+    "date": "15 Mei 2026",
+    "firstParty": {
+      "name": "Kristian Halim, S.T., M.M.",
+      "position": "Direktur Properti & Fasilitas",
+      "company": "PT. Vendor POS Teknologi"
+    },
+    "secondParty": {
+      "name": "Ir. Handoko Setiadi, M.M.",
+      "position": "Direktur Properti Komersial",
+      "company": "PT. Sinar Mas Multiartha Tbk"
+    },
+    "witnesses": [
+      {
+        "name": "Hendry, S.H., M.Kn.",
+        "position": "PPAT / Notaris"
+      }
+    ]
+  },
+
+  "metadata": {
+    "createdAt": "2026-05-15T10:00:00+07:00",
+    "updatedAt": "2026-05-15T10:00:00+07:00",
+    "createdBy": "admin",
+    "createdByRole": "ADMIN",
+    "documentVersion": "1.0",
+    "documentType": "KONTRAK_SEWA",
+    "tags": ["properti", "sewa", "kantor", "cabang"],
+    "approvalStatus": "APPROVED",
+    "approvedBy": "Dewan Komisaris"
+  }
+}

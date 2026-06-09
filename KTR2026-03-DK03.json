@@ -1,0 +1,140 @@
+{
+  "contractNumber": "KTR2026-03-DK03",
+  "title": "KONTRAK PENGADAAN PRODUK FARMASI DAN KESEHATAN",
+  "contractDate": "2026-01-20",
+
+  "firstParty": {
+    "companyName": "PT. VENDOR POS TEKNOLOGI",
+    "address": "Jl. Telekomunikasi No. 1, Bandung, Jawa Barat 40123",
+    "pic": "dr. Maya Anggraini, Sp.OK.",
+    "position": "Direktur Kesehatan & CSR"
+  },
+
+  "secondParty": {
+    "companyName": "PT. Kalbe Farma Tbk",
+    "address": "Jl. Letjen Suprapto Kav. 4, Jakarta Pusat 10510",
+    "pic": "Dr. Andi Pratama, Apt., M.M.",
+    "position": "Direktur Corporate Sales"
+  },
+
+  "object": "PENGADAAN OBAT-OBATAN, VITAMIN, DAN ALAT KESEHATAN",
+  "objectDescription": "Pihak Kedua menyediakan produk farmasi, suplemen kesehatan, dan alat kesehatan untuk kebutuhan klinik perusahaan dan program kesehatan karyawan Pihak Pertama.",
+
+  "scope": {
+    "description": "Lingkup pengadaan meliputi:",
+    "items": [
+      "Obat-obatan umum dan resep dokter untuk klinik perusahaan",
+      "Vitamin dan suplemen kesehatan untuk program kesehatan karyawan",
+      "Alat kesehatan: tensimeter, termometer, alat cek gula darah, masker medis",
+      "APD (Alat Pelindung Diri) untuk karyawan lapangan",
+      "Obat-obatan P3K untuk setiap lantai kantor",
+      "Layanan konsultasi farmasi dan edukasi kesehatan"
+    ]
+  },
+
+  "contractValue": 5250000000,
+  "contractValueText": "Rp5.250.000.000,- (lima miliar dua ratus lima puluh juta rupiah)",
+  "currency": "IDR",
+
+  "paymentTerms": {
+    "description": "Pembayaran dilakukan secara termin:",
+    "terms": [
+      {
+        "term": 1,
+        "percentage": 50,
+        "description": "Pembayaran 50% di muka saat kontrak ditandatangani",
+        "dueDate": "2026-01-27"
+      },
+      {
+        "term": 2,
+        "percentage": 25,
+        "description": "Pembayaran 25% setelah 6 bulan pelaksanaan",
+        "dueDate": "2026-07-20"
+      },
+      {
+        "term": 3,
+        "percentage": 25,
+        "description": "Pembayaran 25% pelunasan setelah evaluasi akhir tahun",
+        "dueDate": "2027-01-20"
+      }
+    ],
+    "paymentMethod": "Transfer Bank ke rekening PT. Kalbe Farma Tbk (BCA: 789-123-4560)"
+  },
+
+  "rightsAndObligations": {
+    "firstParty": {
+      "title": "HAK DAN KEWAJIBAN PIHAK PERTAMA",
+      "rights": [
+        "Mendapatkan obat dan alat kesehatan sesuai standar BPOM dan ISO",
+        "Mendapatkan layanan konsultasi farmasi gratis",
+        "Mendapatkan prioritas pengiriman untuk kebutuhan darurat"
+      ],
+      "obligations": [
+        "Melakukan pembayaran sesuai termin yang disepakati",
+        "Menyediakan resep dokter untuk obat-obatan tertentu",
+        "Melaporkan efek samping obat yang tidak diinginkan",
+        "Menjaga penyimpanan obat sesuai standar farmasi"
+      ]
+    },
+    "secondParty": {
+      "title": "HAK DAN KEWAJIBAN PIHAK KEDUA",
+      "rights": [
+        "Mendapatkan resep tertulis untuk obat keras",
+        "Melakukan audit penyimpanan obat secara berkala"
+      ],
+      "obligations": [
+        "Menjamin semua produk memiliki izin edar BPOM",
+        "Mengganti produk yang rusak atau kedaluwarsa",
+        "Memberikan informasi terbaru tentang penarikan produk",
+        "Memberikan pelatihan penggunaan alat kesehatan"
+      ]
+    }
+  },
+
+  "confidentialityClause": "Seluruh data medis, resep, dan informasi kesehatan karyawan Pihak Pertama bersifat rahasia dan dilindungi oleh Undang-Undang Kesehatan dan Perlindungan Data Pribadi (UU PDP). Pihak Kedua dilarang menyebarluaskan data tersebut kepada pihak manapun.",
+
+  "disputeResolution": "Perselisihan diselesaikan secara musyawarah. Jika tidak mencapai kesepakatan dalam 30 hari, akan diselesaikan melalui Badan Pengawas Obat dan Makanan (BPOM) untuk sengketa teknis, atau melalui Pengadilan Negeri Jakarta Pusat untuk sengketa hukum.",
+
+  "validityPeriod": {
+    "startDate": "2026-01-20",
+    "endDate": "2027-01-20",
+    "duration": "12 (dua belas) bulan kalender",
+    "description": "Kontrak berlaku 12 bulan dan dapat diperpanjang secara otomatis dengan evaluasi kinerja setiap 6 bulan."
+  },
+
+  "status": "ACTIVE",
+
+  "signatureArea": {
+    "location": "Jakarta",
+    "date": "20 Januari 2026",
+    "firstParty": {
+      "name": "dr. Maya Anggraini, Sp.OK.",
+      "position": "Direktur Kesehatan & CSR",
+      "company": "PT. Vendor POS Teknologi"
+    },
+    "secondParty": {
+      "name": "Dr. Andi Pratama, Apt., M.M.",
+      "position": "Direktur Corporate Sales",
+      "company": "PT. Kalbe Farma Tbk"
+    },
+    "witnesses": [
+      {
+        "name": "apt. Rina Marlina, S.Farm.",
+        "position": "Kepala Instalasi Farmasi"
+      }
+    ]
+  },
+
+  "metadata": {
+    "createdAt": "2026-01-20T09:30:00+07:00",
+    "updatedAt": "2026-01-20T09:30:00+07:00",
+    "createdBy": "admin",
+    "createdByRole": "ADMIN",
+    "documentVersion": "1.0",
+    "documentType": "KONTRAK_PENGADAAN",
+    "tags": ["farmasi", "kesehatan", "obat", "alat-kesehatan"],
+    "approvalStatus": "APPROVED",
+    "approvedBy": "Legal Department",
+    "approvedAt": "2026-01-20T15:00:00+07:00"
+  }
+}

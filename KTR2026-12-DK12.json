@@ -1,0 +1,127 @@
+{
+  "contractNumber": "KTR2026-12-DK12",
+  "title": "KONTRAK PENGADAAN PAKAN TERNAK DAN PRODUK AGRIBISNIS",
+  "contractDate": "2026-06-01",
+
+  "firstParty": {
+    "companyName": "PT. VENDOR POS TEKNOLOGI",
+    "address": "Jl. Telekomunikasi No. 1, Bandung, Jawa Barat 40123",
+    "pic": "Eko Prasetyo, S.Pt., M.Si.",
+    "position": "Direktur Agribisnis"
+  },
+
+  "secondParty": {
+    "companyName": "PT. Charoen Pokphand Indonesia Tbk",
+    "address": "Jalan Ancol VIII No. 1, Jakarta Utara 14430",
+    "pic": "Drh. Sri Wahyuni, M.Si.",
+    "position": "Direktur Sales & Distribusi"
+  },
+
+  "object": "PENGADAAN PAKAN TERNAK DAN PRODUK AGRIBISNIS UNTUK UNIT USAHA PETERNAKAN",
+  "objectDescription": "Pihak Kedua menyediakan pakan ternak berkualitas dan produk agribisnis untuk menunjang unit usaha peternakan Pihak Pertama.",
+
+  "scope": {
+    "description": "Lingkup pengadaan meliputi:",
+    "items": [
+      "Pakan ayam broiler (HI-PRO VITA) — 500 ton per bulan",
+      "Pakan ayam petelur (LAYER MEAL) — 200 ton per bulan",
+      "Vitamin dan obat-obatan ternak",
+      "Bibit ayam (Day Old Chicken) — 50.000 ekor per siklus",
+      "Kandang closed house system untuk 2 unit",
+      "Konsultasi teknologi pakan dan manajemen peternakan",
+      "Lab analisis nutrisi pakan gratis setiap bulan"
+    ]
+  },
+
+  "contractValue": 6750000000,
+  "contractValueText": "Rp6.750.000.000,- (enam miliar tujuh ratus lima puluh juta rupiah)",
+  "currency": "IDR",
+
+  "paymentTerms": {
+    "description": "Pembayaran per termin siklus produksi:",
+    "terms": [
+      {
+        "term": 1,
+        "percentage": 40,
+        "description": "Pembayaran 40% saat pemesanan bibit dan pakan awal",
+        "dueDate": "H-7 sebelum pengiriman"
+      },
+      {
+        "term": 2,
+        "percentage": 60,
+        "description": "Pelunasan 60% saat panen dan penjualan hasil ternak",
+        "dueDate": "H+30 setelah panen"
+      }
+    ],
+    "paymentMethod": "Transfer Bank ke rekening PT. Charoen Pokphand Indonesia Tbk (BCA: 222-333-4444)"
+  },
+
+  "rightsAndObligations": {
+    "firstParty": {
+      "title": "HAK DAN KEWAJIBAN PIHAK PERTAMA",
+      "rights": [
+        "Mendapatkan pakan dan bibit dengan kualitas terjamin",
+        "Mendapatkan hasil lab analisis nutrisi pakan",
+        "Mendapatkan konsultasi teknis peternakan gratis"
+      ],
+      "obligations": [
+        "Membayar tepat waktu sesuai termin",
+        "Menerapkan standar biosecurity yang disarankan",
+        "Melaporkan hasil panen dan konversi pakan"
+      ]
+    },
+    "secondParty": {
+      "title": "HAK DAN KEWAJIBAN PIHAK KEDUA",
+      "rights": [
+        "Melakukan visit ke lokasi peternakan secara berkala"
+      ],
+      "obligations": [
+        "Menjamin kualitas pakan sesuai standar SNI",
+        "Mengganti pakan yang terbukti cacat atau tidak sesuai spesifikasi",
+        "Memberikan rekomendasi formulasi pakan yang optimal",
+        "Memberikan hasil uji laboratorium untuk setiap lot pakan"
+      ]
+    }
+  },
+
+  "confidentialityClause": "Data produksi, formula pakan, dan hasil usaha peternakan Pihak Pertama bersifat rahasia dan tidak boleh diungkapkan kepada pihak ketiga termasuk kompetitor.",
+
+  "disputeResolution": "Diselesaikan secara musyawarah, jika gagal melalui mediasi Dinas Peternakan setempat. Jika masih belum selesai, melalui Pengadilan Negeri Jakarta Utara.",
+
+  "validityPeriod": {
+    "startDate": "2026-06-01",
+    "endDate": "2027-06-01",
+    "duration": "12 (dua belas) bulan kalender",
+    "description": "Kontrak percobaan 1 tahun dengan evaluasi setiap 3 bulan."
+  },
+
+  "status": "PENDING",
+
+  "signatureArea": {
+    "location": "Jakarta",
+    "date": "1 Juni 2026",
+    "firstParty": {
+      "name": "Eko Prasetyo, S.Pt., M.Si.",
+      "position": "Direktur Agribisnis",
+      "company": "PT. Vendor POS Teknologi"
+    },
+    "secondParty": {
+      "name": "Drh. Sri Wahyuni, M.Si.",
+      "position": "Direktur Sales & Distribusi",
+      "company": "PT. Charoen Pokphand Indonesia Tbk"
+    },
+    "witnesses": []
+  },
+
+  "metadata": {
+    "createdAt": "2026-06-01T09:00:00+07:00",
+    "updatedAt": "2026-06-01T09:00:00+07:00",
+    "createdBy": "admin",
+    "createdByRole": "ADMIN",
+    "documentVersion": "1.0",
+    "documentType": "KONTRAK_PENGADAAN",
+    "tags": ["pakan", "ternak", "agribisnis", "peternakan"],
+    "approvalStatus": "PENDING_APPROVAL",
+    "approvedBy": null
+  }
+}

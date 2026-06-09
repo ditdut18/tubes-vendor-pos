@@ -1,0 +1,125 @@
+{
+  "contractNumber": "KTR2026-08-DK08",
+  "title": "KONTRAK PENGADAAN BAHAN BAKAR MINYAK INDUSTRI",
+  "contractDate": "2026-04-01",
+
+  "firstParty": {
+    "companyName": "PT. VENDOR POS TEKNOLOGI",
+    "address": "Jl. Telekomunikasi No. 1, Bandung, Jawa Barat 40123",
+    "pic": "Hasan Basri, S.T., M.M.",
+    "position": "Direktur Supply Chain & Energi"
+  },
+
+  "secondParty": {
+    "companyName": "PT. Pertamina (Persero)",
+    "address": "Jalan Medan Merdeka Timur No. 1A, Jakarta Pusat 10110",
+    "pic": "Ir. Ahmad Fauzi, M.M.",
+    "position": "Manager BBM Industri & Niaga"
+  },
+
+  "object": "PENGADAAN BAHAN BAKAR MINYAK (BBM) JENIS SOLAR INDUSTRI DAN BENSIN",
+  "objectDescription": "Pihak Kedua menyediakan BBM jenis solar industri (Biosolar B30) dan bensin (Pertamax) untuk kebutuhan operasional mesin pabrik dan kendaraan operasional Pihak Pertama.",
+
+  "scope": {
+    "description": "Lingkup pengadaan meliputi:",
+    "items": [
+      "Solar industri B30: 80.000 liter per bulan untuk mesin pabrik",
+      "Pertamax: 20.000 liter per bulan untuk kendaraan operasional",
+      "Pengiriman menggunakan tangki khusus ke lokasi pabrik",
+      "Tangki penyimpanan 20.000 liter berikut instalasi",
+      "Sistem monitoring level tangki otomatis (telemetry)",
+      "Laporan pemakaian dan stok real-time via web portal"
+    ]
+  },
+
+  "contractValue": 30000000000,
+  "contractValueText": "Rp30.000.000.000,- (tiga puluh miliar rupiah)",
+  "currency": "IDR",
+
+  "paymentTerms": {
+    "description": "Pembayaran setiap pengiriman dengan termin:",
+    "terms": [
+      {
+        "term": 1,
+        "percentage": 100,
+        "description": "Pembayaran Net 14 hari setelah delivery order dan invoice diterima",
+        "dueDate": "H+14 setiap pengiriman"
+      }
+    ],
+    "paymentMethod": "Transfer Bank ke rekening PT. Pertamina (Persero) (Mandiri: 777-888-9999)"
+  },
+
+  "rightsAndObligations": {
+    "firstParty": {
+      "title": "HAK DAN KEWAJIBAN PIHAK PERTAMA",
+      "rights": [
+        "Mendapatkan BBM sesuai spesifikasi dan standar mutu Pertamina",
+        "Meminta sertifikat uji kualitas untuk setiap pengiriman",
+        "Mendapatkan prioritas pasokan saat kondisi langka"
+      ],
+      "obligations": [
+        "Pembayaran tepat waktu",
+        "Menyediakan akses yang aman untuk pengisian tangki",
+        "Melakukan pemeliharaan tangki penyimpanan sesuai standar"
+      ]
+    },
+    "secondParty": {
+      "title": "HAK DAN KEWAJIBAN PIHAK KEDUA",
+      "rights": [
+        "Melakukan inspeksi instalasi penyimpanan secara berkala"
+      ],
+      "obligations": [
+        "Menjamin kualitas dan volume BBM sesuai standar",
+        "Mengirim BBM tepat waktu sesuai jadwal",
+        "Menangani tumpahan BBM jika terjadi saat pengiriman",
+        "Memberikan harga sesuai ketetapan Pemerintah"
+      ]
+    }
+  },
+
+  "confidentialityClause": "Volume pemakaian, harga khusus industri, dan jadwal pengiriman BBM bersifat rahasia dan dilindungi oleh ketentuan kerahasiaan bisnis.",
+
+  "disputeResolution": "Musyawarah prioritas. Jika gagal, melalui BANI Arbitrase di Jakarta.",
+
+  "validityPeriod": {
+    "startDate": "2026-04-01",
+    "endDate": "2027-04-01",
+    "duration": "12 (dua belas) bulan kalender",
+    "description": "Kontrak berlaku 12 bulan dengan penyesuaian harga setiap 3 bulan berdasarkan harga minyak dunia."
+  },
+
+  "status": "ACTIVE",
+
+  "signatureArea": {
+    "location": "Jakarta",
+    "date": "1 April 2026",
+    "firstParty": {
+      "name": "Hasan Basri, S.T., M.M.",
+      "position": "Direktur Supply Chain & Energi",
+      "company": "PT. Vendor POS Teknologi"
+    },
+    "secondParty": {
+      "name": "Ir. Ahmad Fauzi, M.M.",
+      "position": "Manager BBM Industri & Niaga",
+      "company": "PT. Pertamina (Persero)"
+    },
+    "witnesses": [
+      {
+        "name": "Indra Lesmana, S.H.",
+        "position": "Notaris"
+      }
+    ]
+  },
+
+  "metadata": {
+    "createdAt": "2026-04-01T09:00:00+07:00",
+    "updatedAt": "2026-04-01T09:00:00+07:00",
+    "createdBy": "admin",
+    "createdByRole": "ADMIN",
+    "documentVersion": "1.0",
+    "documentType": "KONTRAK_PENGADAAN",
+    "tags": ["BBM", "solar", "energi", "bahan-bakar"],
+    "approvalStatus": "APPROVED",
+    "approvedBy": "Direktur Utama"
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "contractNumber": "KTR2026-15-DK15",
+  "title": "KONTRAK PENGADAAN ALAT KESEHATAN DAN PERLENGKAPAN MEDIS",
+  "contractDate": "2026-07-15",
+
+  "firstParty": {
+    "companyName": "PT. VENDOR POS TEKNOLOGI",
+    "address": "Jl. Telekomunikasi No. 1, Bandung, Jawa Barat 40123",
+    "pic": "dr. Fajar Nugroho, Sp.PK.",
+    "position": "Direktur Medis & Layanan Kesehatan"
+  },
+
+  "secondParty": {
+    "companyName": "PT. Kimia Farma Tbk",
+    "address": "Jalan Veteran No. 9, Jakarta Pusat 10110",
+    "pic": "apt. Rina Marlina, S.Farm., M.M.",
+    "position": "Direktur Logistik & Distribusi"
+  },
+
+  "object": "PENGADAAN ALAT KESEHATAN, APD, DAN PERLENGKAPAN MEDIS UNTUK FASILITAS KESEHATAN",
+  "objectDescription": "Pihak Kedua menyediakan alat kesehatan, APD, dan perlengkapan medis untuk kebutuhan klinik dan unit kesehatan Pihak Pertama dengan standar mutu ISO 13485.",
+
+  "scope": {
+    "description": "Lingkup pengadaan meliputi:",
+    "items": [
+      "Alat kesehatan: tensimeter digital, termometer infrared, stetoskop, EKG portabel",
+      "APD: masker medis, sarung tangan, hazmat suit, faceshield",
+      "Perlengkapan P3K: tandu, bidai, perban, plester, kapas, alkohol",
+      "Obat-obatan darurat: adrenalin, antihistamin, analgesic, antibiotik",
+      "Alat bantu: kursi roda, kruk, walker, oksigen portabel",
+      "Kalibrasi alat kesehatan setiap 6 bulan",
+      "Pelatihan penggunaan alat kesehatan untuk staf medis"
+    ]
+  },
+
+  "contractValue": 3200000000,
+  "contractValueText": "Rp3.200.000.000,- (tiga miliar dua ratus juta rupiah)",
+  "currency": "IDR",
+
+  "paymentTerms": {
+    "description": "Pembayaran berdasarkan pesanan:",
+    "terms": [
+      {
+        "term": 1,
+        "percentage": 50,
+        "description": "Pembayaran 50% saat pemesanan alat",
+        "dueDate": "Saat PO diterbitkan"
+      },
+      {
+        "term": 2,
+        "percentage": 50,
+        "description": "Pelunasan 50% setelah alat diterima dan diuji fungsi",
+        "dueDate": "H+14 setelah serah terima"
+      }
+    ],
+    "paymentMethod": "Transfer Bank ke rekening PT. Kimia Farma Tbk (Mandiri: 666-777-8888)"
+  },
+
+  "rightsAndObligations": {
+    "firstParty": {
+      "title": "HAK DAN KEWAJIBAN PIHAK PERTAMA",
+      "rights": [
+        "Mendapatkan alat kesehatan dengan izin edar Kemenkes dan BPOM",
+        "Melakukan uji fungsi sebelum penerimaan final",
+        "Mendapatkan garansi alat minimal 2 tahun",
+        "Mendapatkan pelatihan penggunaan alat"
+      ],
+      "obligations": [
+        "Pembayaran sesuai termin",
+        "Melakukan kalibrasi rutin sesuai jadwal",
+        "Melaporkan kerusakan alat dalam masa garansi"
+      ]
+    },
+    "secondParty": {
+      "title": "HAK DAN KEWAJIBAN PIHAK KEDUA",
+      "rights": [
+        "Melakukan instalasi dan kalibrasi alat secara berkala"
+      ],
+      "obligations": [
+        "Menjamin alat kesehatan sesuai standar ISO 13485",
+        "Menyediakan teknisi untuk perbaikan maksimal 3 hari kerja",
+        "Menyediakan alat pengganti selama perbaikan untuk alat kritikal",
+        "Memberikan pelatihan penggunaan alat secara gratis",
+        "Menyediakan suku cadang selama 5 tahun"
+      ]
+    }
+  },
+
+  "confidentialityClause": "Seluruh data medis, spesifikasi alat, dan informasi kesehatan yang terkait dengan kontrak ini bersifat rahasia dan dilindungi oleh Undang-Undang Kesehatan dan UU PDP.",
+
+  "disputeResolution": "Diselesaikan secara musyawarah. Jika gagal, melalui mediasi Kementerian Kesehatan atau Pengadilan Negeri Jakarta Pusat.",
+
+  "validityPeriod": {
+    "startDate": "2026-07-15",
+    "endDate": "2027-07-15",
+    "duration": "12 (dua belas) bulan kalender",
+    "description": "Kontrak berlaku 12 bulan dan mencakup layanan garansi serta purna jual."
+  },
+
+  "status": "ACTIVE",
+
+  "signatureArea": {
+    "location": "Jakarta",
+    "date": "15 Juli 2026",
+    "firstParty": {
+      "name": "dr. Fajar Nugroho, Sp.PK.",
+      "position": "Direktur Medis & Layanan Kesehatan",
+      "company": "PT. Vendor POS Teknologi"
+    },
+    "secondParty": {
+      "name": "apt. Rina Marlina, S.Farm., M.M.",
+      "position": "Direktur Logistik & Distribusi",
+      "company": "PT. Kimia Farma Tbk"
+    },
+    "witnesses": [
+      {
+        "name": "Dewi Sartika, S.H., M.Kn.",
+        "position": "Notaris"
+      }
+    ]
+  },
+
+  "metadata": {
+    "createdAt": "2026-07-15T09:00:00+07:00",
+    "updatedAt": "2026-07-15T09:00:00+07:00",
+    "createdBy": "admin",
+    "createdByRole": "ADMIN",
+    "documentVersion": "1.0",
+    "documentType": "KONTRAK_PENGADAAN",
+    "tags": ["alat-kesehatan", "medis", "APD", "klinik"],
+    "approvalStatus": "APPROVED",
+    "approvedBy": "Direktur Utama"
+  }
+}

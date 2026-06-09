@@ -1,0 +1,134 @@
+{
+  "contractNumber": "KTR2026-13-DK13",
+  "title": "KONTRAK PENGADAAN BATUBARA UNTUK KEBUTUHAN ENERGI PABRIK",
+  "contractDate": "2026-06-15",
+
+  "firstParty": {
+    "companyName": "PT. VENDOR POS TEKNOLOGI",
+    "address": "Jl. Telekomunikasi No. 1, Bandung, Jawa Barat 40123",
+    "pic": "Indra Lesmana, S.T., M.M.",
+    "position": "Direktur Energi & Utilitas"
+  },
+
+  "secondParty": {
+    "companyName": "PT. Adaro Energy Indonesia Tbk",
+    "address": "Jalan TB Simatupang Kav. 38, Jakarta Selatan 12440",
+    "pic": "Ir. Rizky Pradana, M.T.",
+    "position": "Direktur Penjualan & Pemasaran"
+  },
+
+  "object": "PENGADAAN BATUBARA UNTUK KEBUTUHAN ENERGI PABRIK DAN FASILITAS PRODUKSI",
+  "objectDescription": "Pihak Kedua menyediakan batubara kalori tinggi untuk kebutuhan energi pabrik dan fasilitas produksi Pihak Pertama.",
+
+  "scope": {
+    "description": "Lingkup pengadaan meliputi:",
+    "items": [
+      "Batubara kalori 5.500 GAR (GCV) — 50.000 ton per tahun",
+      "Pengiriman menggunakan kapal tongkang ke jetty pabrik",
+      "Quality control di loading port dan discharging port",
+      "Stockpile management di lokasi pabrik",
+      "Sampling dan analisis laboratorium setiap pengiriman",
+      "Laporan bulanan volume, kualitas, dan stok",
+      "Penalti jika kualitas di bawah spesifikasi yang disepakati"
+    ]
+  },
+
+  "contractValue": 45000000000,
+  "contractValueText": "Rp45.000.000.000,- (empat puluh lima miliar rupiah)",
+  "currency": "IDR",
+
+  "paymentTerms": {
+    "description": "Pembayaran per pengiriman:",
+    "terms": [
+      {
+        "term": 1,
+        "percentage": 80,
+        "description": "Pembayaran 80% saat dokumen pengapalan lengkap (7 hari setelah BL date)",
+        "dueDate": "H+7 setelah Bill of Lading"
+      },
+      {
+        "term": 2,
+        "percentage": 20,
+        "description": "Pelunasan 20% setelah hasil quality analysis final diterima",
+        "dueDate": "H+30 setelah barang tiba di jetty"
+      }
+    ],
+    "paymentMethod": "Transfer Bank ke rekening PT. Adaro Energy Indonesia Tbk (BCA: 888-999-0000)"
+  },
+
+  "rightsAndObligations": {
+    "firstParty": {
+      "title": "HAK DAN KEWAJIBAN PIHAK PERTAMA",
+      "rights": [
+        "Mendapatkan batubara sesuai spesifikasi kontrak",
+        "Melakukan sampling dan analisis independen",
+        "Menolak pengiriman jika kualitas di bawah batas toleransi",
+        "Mendapatkan prioritas pasokan di musim hujan"
+      ],
+      "obligations": [
+        "Membayar tepat waktu sesuai termin",
+        "Menyediakan jetty dan fasilitas bongkar yang memadai",
+        "Melakukan pembongkaran dalam waktu 2x24 jam"
+      ]
+    },
+    "secondParty": {
+      "title": "HAK DAN KEWAJIBAN PIHAK KEDUA",
+      "rights": [
+        "Melakukan supervisi proses bongkar muat",
+        "Mendapatkan hasil analisis kualitas dari Pihak Pertama"
+      ],
+      "obligations": [
+        "Menjamin kualitas sesuai spesifikasi kontrak",
+        "Membayar penalti jika kualitas di bawah spesifikasi",
+        "Menanggung biaya demurage jika keterlambatan dari pihaknya",
+        "Memberikan sertifikat asal barang (SKA)"
+      ]
+    }
+  },
+
+  "confidentialityClause": "Harga batubara, volume kontrak, dan spesifikasi teknis bersifat rahasia bisnis. Pelanggaran dikenakan sanksi ganti rugi sesuai hukum yang berlaku.",
+
+  "disputeResolution": "Diselesaikan secara musyawarah. Jika gagal, melalui BANI Arbitrase di Jakarta dengan bahasa Indonesia.",
+
+  "validityPeriod": {
+    "startDate": "2026-06-15",
+    "endDate": "2028-06-15",
+    "duration": "24 (dua puluh empat) bulan kalender",
+    "description": "Kontrak jangka panjang 2 tahun dengan review harga setiap 6 bulan berdasarkan ICI (Indonesian Coal Index)."
+  },
+
+  "status": "ACTIVE",
+
+  "signatureArea": {
+    "location": "Jakarta",
+    "date": "15 Juni 2026",
+    "firstParty": {
+      "name": "Indra Lesmana, S.T., M.M.",
+      "position": "Direktur Energi & Utilitas",
+      "company": "PT. Vendor POS Teknologi"
+    },
+    "secondParty": {
+      "name": "Ir. Rizky Pradana, M.T.",
+      "position": "Direktur Penjualan & Pemasaran",
+      "company": "PT. Adaro Energy Indonesia Tbk"
+    },
+    "witnesses": [
+      {
+        "name": "Bambang Setiawan, S.H.",
+        "position": "Notaris"
+      }
+    ]
+  },
+
+  "metadata": {
+    "createdAt": "2026-06-15T09:00:00+07:00",
+    "updatedAt": "2026-06-15T09:00:00+07:00",
+    "createdBy": "admin",
+    "createdByRole": "ADMIN",
+    "documentVersion": "1.0",
+    "documentType": "KONTRAK_PENGADAAN",
+    "tags": ["batubara", "energi", "pabrik", "bahan-bakar"],
+    "approvalStatus": "APPROVED",
+    "approvedBy": "Direktur Utama"
+  }
+}

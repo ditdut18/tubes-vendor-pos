@@ -1,0 +1,130 @@
+{
+  "contractNumber": "KTR2026-02-DK02",
+  "title": "KONTRAK PENGADAAN PRODUK MAKANAN DAN MINUMAN",
+  "contractDate": "2026-01-15",
+
+  "firstParty": {
+    "companyName": "PT. VENDOR POS TEKNOLOGI",
+    "address": "Jl. Telekomunikasi No. 1, Bandung, Jawa Barat 40123",
+    "pic": "Rudi Hartono, S.T., M.M.",
+    "position": "Direktur Operasional"
+  },
+
+  "secondParty": {
+    "companyName": "PT. Indofood Sukses Makmur Tbk",
+    "address": "Jl. Jend. Sudirman Kav. 76-78, Jakarta Pusat 10210",
+    "pic": "Dra. Dewi Sartika, M.B.A.",
+    "position": "B2B Sales Director"
+  },
+
+  "object": "PENGADAAN PRODUK MAKANAN DAN MINUMAN KEMASAN UNTUK OPERASIONAL KANTOR",
+  "objectDescription": "Pihak Kedua menyediakan produk makanan dan minuman kemasan untuk kebutuhan operasional kantor dan fasilitas perusahaan Pihak Pertama di seluruh cabang Indonesia.",
+
+  "scope": {
+    "description": "Pengadaan produk meliputi distribusi mingguan ke seluruh kantor cabang Pihak Pertama dengan lingkup:",
+    "items": [
+      "Produk mi instan: Indomie goreng, kuah, dan varian khusus - 5.000 dus/bulan",
+      "Minuman kemasan: Teh Botol, Frut tea, dan air mineral - 10.000 botol/bulan",
+      "Makanan ringan: Chitato, Qtela, dan produk snack lainnya - 3.000 pak/bulan",
+      "Bumbu dan saus: Bumbu masak, kecap, dan saus sambal - 2.000 pak/bulan",
+      "Pengiriman terjadwal setiap hari Senin dan Kamis",
+      "Sistem konsinyasi untuk 10 point of sales"
+    ]
+  },
+
+  "contractValue": 8500000000,
+  "contractValueText": "Rp8.500.000.000,- (delapan miliar lima ratus juta rupiah)",
+  "currency": "IDR",
+
+  "paymentTerms": {
+    "description": "Pembayaran dilakukan secara bulanan setelah barang diterima dan diperiksa:",
+    "terms": [
+      {
+        "term": 1,
+        "percentage": 100,
+        "description": "Pembayaran 100% setiap tanggal 5 bulan berikutnya setelah penerimaan barang bulan sebelumnya",
+        "dueDate": "Setiap tanggal 5"
+      }
+    ],
+    "paymentMethod": "Transfer Bank ke rekening PT. Indofood Sukses Makmur Tbk (Mandiri: 123-789-4560)"
+  },
+
+  "rightsAndObligations": {
+    "firstParty": {
+      "title": "HAK DAN KEWAJIBAN PIHAK PERTAMA",
+      "rights": [
+        "Menerima barang tepat waktu sesuai jadwal pengiriman",
+        "Melakukan pemeriksaan kualitas dan kuantitas barang",
+        "Mengembalikan barang yang rusak atau melewati batas kedaluwarsa",
+        "Mendapatkan prioritas penggantian barang rusak maksimal 1x24 jam"
+      ],
+      "obligations": [
+        "Melakukan pembayaran tepat waktu setiap bulan",
+        "Menyediakan tempat penyimpanan yang sesuai standar",
+        "Melaporkan kerusakan atau kekurangan barang maksimal 2x24 jam",
+        "Menjaga kondisi barang selama di gudang"
+      ]
+    },
+    "secondParty": {
+      "title": "HAK DAN KEWAJIBAN PIHAK KEDUA",
+      "rights": [
+        "Menerima pembayaran sesuai tagihan bulanan",
+        "Melakukan monitoring kondisi barang di gudang Pihak Pertama",
+        "Menyesuaikan harga apabila terjadi inflasi > 5% (dengan pemberitahuan 30 hari)"
+      ],
+      "obligations": [
+        "Menjamin kualitas dan masa kedaluwarsa produk (minimal 6 bulan)",
+        "Mengganti barang rusak atau cacat secara gratis",
+        "Memberikan laporan stok dan pengiriman mingguan",
+        "Menjaga ketersediaan stok sesuai kebutuhan Pihak Pertama"
+      ]
+    }
+  },
+
+  "confidentialityClause": "Seluruh data bisnis, harga khusus, volume penjualan, dan strategi pemasaran yang dipertukarkan dalam kontrak ini bersifat rahasia dan tidak boleh diungkapkan kepada pihak ketiga tanpa persetujuan tertulis dari kedua belah pihak. Klausul ini berlaku selama 2 (dua) tahun setelah kontrak berakhir.",
+
+  "disputeResolution": "Setiap perselisihan akan diselesaikan melalui musyawarah. Jika tidak tercapai kesepakatan dalam 30 hari, akan diselesaikan melalui Pengadilan Negeri Jakarta Pusat.",
+
+  "validityPeriod": {
+    "startDate": "2026-01-15",
+    "endDate": "2028-01-15",
+    "duration": "24 (dua puluh empat) bulan kalender",
+    "description": "Kontrak ini berlaku selama 24 bulan sejak ditandatangani."
+  },
+
+  "status": "ACTIVE",
+
+  "signatureArea": {
+    "location": "Jakarta",
+    "date": "15 Januari 2026",
+    "firstParty": {
+      "name": "Rudi Hartono, S.T., M.M.",
+      "position": "Direktur Operasional",
+      "company": "PT. Vendor POS Teknologi"
+    },
+    "secondParty": {
+      "name": "Dra. Dewi Sartika, M.B.A.",
+      "position": "B2B Sales Director",
+      "company": "PT. Indofood Sukses Makmur Tbk"
+    },
+    "witnesses": [
+      {
+        "name": "Hendra Gunawan, S.H.",
+        "position": "Notaris"
+      }
+    ]
+  },
+
+  "metadata": {
+    "createdAt": "2026-01-15T10:00:00+07:00",
+    "updatedAt": "2026-01-15T10:00:00+07:00",
+    "createdBy": "admin",
+    "createdByRole": "ADMIN",
+    "documentVersion": "1.0",
+    "documentType": "KONTRAK_PENGADAAN",
+    "tags": ["makanan", "minuman", "kantin", "katering"],
+    "approvalStatus": "APPROVED",
+    "approvedBy": "Legal Department",
+    "approvedAt": "2026-01-15T16:00:00+07:00"
+  }
+}

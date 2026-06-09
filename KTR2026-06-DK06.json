@@ -1,0 +1,133 @@
+{
+  "contractNumber": "KTR2026-06-DK06",
+  "title": "KONTRAK PENGADAAN KENDARAAN OPERASIONAL DAN ALAT BERAT",
+  "contractDate": "2026-03-01",
+
+  "firstParty": {
+    "companyName": "PT. VENDOR POS TEKNOLOGI",
+    "address": "Jl. Telekomunikasi No. 1, Bandung, Jawa Barat 40123",
+    "pic": "Tommy Winata, S.T., M.M.",
+    "position": "Direktur Operasional & Logistik"
+  },
+
+  "secondParty": {
+    "companyName": "PT. Astra International Tbk",
+    "address": "Jalan Gaya Motor Raya No. 8, Jakarta Utara 14460",
+    "pic": "Ferry Kurniawan, S.T.",
+    "position": "Fleet Sales Director"
+  },
+
+  "object": "PENGADAAN KENDARAAN OPERASIONAL DAN ALAT BERAT UNTUK PROYEK PERUSAHAAN",
+  "objectDescription": "Pihak Kedua menyediakan kendaraan operasional roda empat dan alat berat untuk mendukung proyek-proyek infrastruktur dan operasional lapangan Pihak Pertama.",
+
+  "scope": {
+    "description": "Lingkup pengadaan meliputi:",
+    "items": [
+      "10 unit Toyota Innova Zenix untuk kendaraan operasional manajemen",
+      "25 unit Toyota Hilux untuk kendaraan operasional lapangan",
+      "5 unit Dumptruck untuk proyek infrastruktur",
+      "2 unit Wheel Loader untuk gudang material",
+      "Service dan perawatan berkala selama 3 tahun",
+      "Asuransi all risk untuk seluruh unit kendaraan",
+      "Program pengemudi pengganti selama kendaraan di service"
+    ]
+  },
+
+  "contractValue": 25000000000,
+  "contractValueText": "Rp25.000.000.000,- (dua puluh lima miliar rupiah)",
+  "currency": "IDR",
+
+  "paymentTerms": {
+    "description": "Pembayaran dilakukan secara multi-termin:",
+    "terms": [
+      {
+        "term": 1,
+        "percentage": 20,
+        "description": "DP 20% saat pemesanan kendaraan",
+        "dueDate": "2026-03-08"
+      },
+      {
+        "term": 2,
+        "percentage": 50,
+        "description": "Pembayaran 50% saat penyerahan unit pertama",
+        "dueDate": "2026-04-01"
+      },
+      {
+        "term": 3,
+        "percentage": 30,
+        "description": "Pelunasan 30% setelah seluruh unit diserahkan dan BAST ditandatangani",
+        "dueDate": "2026-06-01"
+      }
+    ],
+    "paymentMethod": "Transfer Bank ke rekening PT. Astra International Tbk (BCA: 111-222-3333)"
+  },
+
+  "rightsAndObligations": {
+    "firstParty": {
+      "title": "HAK DAN KEWAJIBAN PIHAK PERTAMA",
+      "rights": [
+        "Mendapatkan kendaraan sesuai spesifikasi yang dipesan",
+        "Mendapatkan garansi pabrik 3 tahun atau 100.000 km",
+        "Mendapatkan layanan darurat 24 jam dan bengkel rekanan di seluruh Indonesia"
+      ],
+      "obligations": [
+        "Melakukan pembayaran tepat waktu sesuai termin",
+        "Melakukan perawatan kendaraan rutin di bengkel resmi Astra",
+        "Menanggung biaya operasional dan pemakaian"
+      ]
+    },
+    "secondParty": {
+      "title": "HAK DAN KEWAJIBAN PIHAK KEDUA",
+      "rights": [
+        "Melakukan monitoring kondisi kendaraan secara berkala"
+      ],
+      "obligations": [
+        "Menyerahkan kendaraan sesuai spesifikasi dan jadwal",
+        "Memberikan garansi dan layanan purna jual",
+        "Menyediakan kendaraan pengganti jika perbaikan lebih dari 3 hari",
+        "Melakukan training dasar perawatan untuk driver"
+      ]
+    }
+  },
+
+  "confidentialityClause": "Harga khusus fleet, diskon volume, dan syarat-syarat pembayaran dalam kontrak ini bersifat rahasia dan hanya untuk internal kedua belah pihak.",
+
+  "disputeResolution": "Diselesaikan secara musyawarah. Jika tidak mencapai kesepakatan, melalui Pengadilan Negeri Jakarta Utara.",
+
+  "validityPeriod": {
+    "startDate": "2026-03-01",
+    "endDate": "2028-03-01",
+    "duration": "24 (dua puluh empat) bulan kalender",
+    "description": "Kontrak berlaku 24 bulan mencakup pengadaan kendaraan dan layanan purna jual."
+  },
+
+  "status": "ACTIVE",
+
+  "signatureArea": {
+    "location": "Jakarta",
+    "date": "1 Maret 2026",
+    "firstParty": {
+      "name": "Tommy Winata, S.T., M.M.",
+      "position": "Direktur Operasional & Logistik",
+      "company": "PT. Vendor POS Teknologi"
+    },
+    "secondParty": {
+      "name": "Ferry Kurniawan, S.T.",
+      "position": "Fleet Sales Director",
+      "company": "PT. Astra International Tbk"
+    },
+    "witnesses": []
+  },
+
+  "metadata": {
+    "createdAt": "2026-03-01T09:00:00+07:00",
+    "updatedAt": "2026-03-01T09:00:00+07:00",
+    "createdBy": "admin",
+    "createdByRole": "ADMIN",
+    "documentVersion": "1.0",
+    "documentType": "KONTRAK_PENGADAAN",
+    "tags": ["kendaraan", "otomotif", "alat-berat", "operasional"],
+    "approvalStatus": "APPROVED",
+    "approvedBy": "Direktur Utama"
+  }
+}

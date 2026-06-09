@@ -1,0 +1,121 @@
+{
+  "contractNumber": "KTR2026-04-DK04",
+  "title": "KONTRAK PENGADAAN PRODUK KEBERSIHAN DAN CONSUMER GOODS",
+  "contractDate": "2026-02-01",
+
+  "firstParty": {
+    "companyName": "PT. VENDOR POS TEKNOLOGI",
+    "address": "Jl. Telekomunikasi No. 1, Bandung, Jawa Barat 40123",
+    "pic": "Sari Dewi Kusuma, S.E.",
+    "position": "Manager Procurement & Logistik"
+  },
+
+  "secondParty": {
+    "companyName": "PT. Unilever Indonesia Tbk",
+    "address": "Jl. BSD Boulevard, Tangerang, Banten 15345",
+    "pic": "Budi Santoso, S.T., M.B.A.",
+    "position": "Key Account Director"
+  },
+
+  "object": "PENGADAAN PRODUK KEBERSIHAN DAN PERAWATAN UNTUK FASILITAS PERUSAHAAN",
+  "objectDescription": "Pihak Kedua menyediakan produk kebersihan, perawatan pribadi, dan kebutuhan rumah tangga untuk seluruh unit dan fasilitas perusahaan Pihak Pertama.",
+
+  "scope": {
+    "description": "Lingkup pengadaan meliputi:",
+    "items": [
+      "Produk kebersihan: sabun cair, pembersih lantai, pembersih kaca, pengharum ruangan",
+      "Produk perawatan pribadi: sabun mandi, shampoo, pasta gigi, deodoran",
+      "Perlengkapan kantor: tisu, handuk kertas, air purifier refill",
+      "Produk pencuci piring dan deterjen untuk pantry",
+      "Distribusi bulanan ke seluruh 25 cabang perusahaan",
+      "Program pelatihan kebersihan dan sanitasi untuk staf kebersihan"
+    ]
+  },
+
+  "contractValue": 3750000000,
+  "contractValueText": "Rp3.750.000.000,- (tiga miliar tujuh ratus lima puluh juta rupiah)",
+  "currency": "IDR",
+
+  "paymentTerms": {
+    "description": "Pembayaran net 30 hari setelah invoice diterima:",
+    "terms": [
+      {
+        "term": 1,
+        "percentage": 100,
+        "description": "Pembayaran penuh setiap bulan (Net 30) berdasarkan delivery order bulan sebelumnya",
+        "dueDate": "H+30 setelah invoice"
+      }
+    ],
+    "paymentMethod": "Transfer Bank ke rekening PT. Unilever Indonesia Tbk (BCA: 456-789-1230)"
+  },
+
+  "rightsAndObligations": {
+    "firstParty": {
+      "title": "HAK DAN KEWAJIBAN PIHAK PERTAMA",
+      "rights": [
+        "Mendapatkan produk dengan harga distributor langsung",
+        "Mendapatkan program promosi dan diskon khusus",
+        "Mendapatkan prioritas pengiriman untuk produk yang sedang shortage"
+      ],
+      "obligations": [
+        "Pembayaran tepat waktu sesuai Net 30",
+        "Menyediakan data consumption bulanan untuk forecasting",
+        "Menjaga minimal stok 2 minggu di gudang"
+      ]
+    },
+    "secondParty": {
+      "title": "HAK DAN KEWAJIBAN PIHAK KEDUA",
+      "rights": [
+        "Inspeksi kondisi stok di gudang secara berkala",
+        "Melakukan penyesuaian harga setiap 6 bulan berdasarkan CPI"
+      ],
+      "obligations": [
+        "Menjamin ketersediaan stok nasional",
+        "Memberikan sample produk baru setiap kuartal",
+        "Mengganti produk rusak atau cacat dalam 1x24 jam",
+        "Memberikan training produk baru untuk tim procurement"
+      ]
+    }
+  },
+
+  "confidentialityClause": "Harga khusus, volume pembelian, dan strategi distribusi yang tercantum dalam kontrak ini adalah rahasia bisnis kedua belah pihak dan tidak boleh diungkapkan kepada kompetitor. Pelanggaran dikenakan sanksi sesuai ketentuan hukum yang berlaku.",
+
+  "disputeResolution": "Musyawarah adalah prioritas utama. Jika tidak terselesaikan dalam 30 hari, akan dibawa ke Pengadilan Negeri Tangerang.",
+
+  "validityPeriod": {
+    "startDate": "2026-02-01",
+    "endDate": "2027-02-01",
+    "duration": "12 (dua belas) bulan kalender",
+    "description": "Kontrak berlaku 12 bulan dengan opsi perpanjangan otomatis 1 tahun apabila tidak ada pemberitahuan penghentian 60 hari sebelumnya."
+  },
+
+  "status": "ACTIVE",
+
+  "signatureArea": {
+    "location": "Tangerang",
+    "date": "1 Februari 2026",
+    "firstParty": {
+      "name": "Sari Dewi Kusuma, S.E.",
+      "position": "Manager Procurement & Logistik",
+      "company": "PT. Vendor POS Teknologi"
+    },
+    "secondParty": {
+      "name": "Budi Santoso, S.T., M.B.A.",
+      "position": "Key Account Director",
+      "company": "PT. Unilever Indonesia Tbk"
+    },
+    "witnesses": []
+  },
+
+  "metadata": {
+    "createdAt": "2026-02-01T08:00:00+07:00",
+    "updatedAt": "2026-02-01T08:00:00+07:00",
+    "createdBy": "admin",
+    "createdByRole": "ADMIN",
+    "documentVersion": "1.0",
+    "documentType": "KONTRAK_PENGADAAN",
+    "tags": ["kebersihan", "consumer-goods", "perawatan"],
+    "approvalStatus": "APPROVED",
+    "approvedBy": "Legal Department"
+  }
+}
